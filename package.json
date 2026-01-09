@@ -1,0 +1,41 @@
+{
+  "name": "tutribu",
+  "private": true,
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "dotenv": "^17.2.2",
+      "zod": "^4.1.13",
+      "@types/bun": "^1.3.4",
+      "@prisma/client": "^7.1.0"
+    }
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "check-types": "turbo check-types",
+    "dev:native": "turbo -F native dev",
+    "dev:web": "turbo -F web dev",
+    "dev:server": "turbo -F server dev",
+    "db:push": "turbo -F @tutribu/db db:push",
+    "db:studio": "turbo -F @tutribu/db db:studio",
+    "db:generate": "turbo -F @tutribu/db db:generate",
+    "db:migrate": "turbo -F @tutribu/db db:migrate"
+  },
+  "dependencies": {
+    "@tutribu/env": "workspace:*",
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@tutribu/config": "workspace:*",
+    "@types/bun": "catalog:",
+    "turbo": "^2.6.3",
+    "typescript": "^5"
+  },
+  "packageManager": "bun@1.3.5"
+}
