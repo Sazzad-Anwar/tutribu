@@ -28,14 +28,14 @@
   },
   "dependencies": {
     "@tutribu/env": "workspace:*",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
+    "dotenv": "^17.2.3",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@tutribu/config": "workspace:*",
-    "@types/bun": "catalog:",
-    "turbo": "^2.6.3",
-    "typescript": "^5"
+    "@types/bun": "^1.3.5",
+    "turbo": "^2.7.3",
+    "typescript": "^5.9.3"
   },
   "packageManager": "bun@1.3.5"
 }

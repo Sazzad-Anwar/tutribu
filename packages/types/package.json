@@ -1,0 +1,20 @@
+{
+  "name": "@tutribu/types",
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./src/index.ts"
+    },
+    "./*": {
+      "default": "./src/*.ts"
+    }
+  },
+  "dependencies": {
+    "dotenv": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@tutribu/config": "workspace:*",
+    "typescript": "^5"
+  }
+}

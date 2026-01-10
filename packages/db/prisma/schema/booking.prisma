@@ -1,0 +1,76 @@
+// Booking schema: bookings, extra features, and promotional codes.
+// Added indexes to improve query performance for large datasets (millions of rows).
+// Keep indexes targeted to real query patterns to avoid excessive write overhead.
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum CheckingType {
+  SELF
+  GUEST
+}
+
+enum PaymentPlan {
+  THREE_MONTH
+  SIX_MONTH
+  ONE_TIME
+}
+
+model Booking {
+  id                String           @id @default(cuid())
+  userId            String
+  specialRequest    String?
+  status            BookingStatus    @default(PENDING)
+  paymentPlan       PaymentPlan      @default(ONE_TIME)
+  groupId           String
+  totalAmount       Float
+  checkingType      CheckingType     @default(SELF)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  extraFeatures     ExtraFeature[]
+  promotionalCode   PromotionalCode? @relation(fields: [promotionalCodeId], references: [id])
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promotionalCodeId String?
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([groupId])
+  @@index([status])
+  @@index([promotionalCodeId])
+  @@index([createdAt])
+  @@index([groupId, status])
+}
+
+model ExtraFeature {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  booking     Booking? @relation(fields: [bookingId], references: [id])
+  bookingId   String?
+
+  // Index for fast lookup of features by booking
+  @@index([bookingId])
+}
+
+model PromotionalCode {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  discount  Float
+  validFrom DateTime
+  validTo   DateTime
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+
+  // Indexes for validity window queries and time-based scans
+  @@index([validFrom])
+  @@index([validTo])
+  @@index([createdAt])
+}

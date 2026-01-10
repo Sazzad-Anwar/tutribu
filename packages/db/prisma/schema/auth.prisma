@@ -1,0 +1,44 @@
+enum AuthProvider {
+  PASSWORD
+  GOOGLE
+}
+
+model User {
+  id            String         @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String         @unique
+  password      String
+  phoneNumber   String?
+  dateOfBirth   DateTime?
+  country       String?
+  address       String?
+  zipCode       String?
+  city          String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  authProvider  AuthProvider   @default(PASSWORD)
+  customerId    String?
+  avatarUrl     String?
+  refreshTokens RefreshToken[]
+  bookings      Booking[]
+
+  @@index([createdAt])
+  @@index([customerId])
+}
+
+model RefreshToken {
+  id                String   @id @default(cuid())
+  tokenHash         String   @unique
+  userId            String
+  createdAt         DateTime @default(now())
+  expiresAt         DateTime
+  revoked           Boolean  @default(false)
+  replacedByTokenId String?
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([userId, revoked])
+  @@index([replacedByTokenId])
+}
