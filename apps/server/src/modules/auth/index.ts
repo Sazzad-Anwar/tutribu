@@ -1,7 +1,7 @@
-import Elysia from "elysia";
-import { ChangePasswordSchema, SignUpSchema } from "@tutribu/types";
-import jwt from "@elysiajs/jwt";
-import { env } from "@tutribu/env/server";
+import Elysia from 'elysia'
+import { ChangePasswordSchema, SignUpSchema } from '@tutribu/types'
+import jwt from '@elysiajs/jwt'
+import { env } from '@tutribu/env/server'
 import {
   changePassword,
   getUser,
@@ -9,18 +9,30 @@ import {
   saveUser,
   signInUser,
   logout,
-} from "./auth.service";
-import z from "zod";
+} from './auth.service'
+import z from 'zod'
 
-export const AuthModule: any = new Elysia({ prefix: "/api/auth" })
+const isProduction = process.env.NODE_ENV === 'production'
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: isProduction,
+  path: '/',
+  sameSite: isProduction ? 'strict' : ('lax' as 'strict' | 'lax'),
+}
+
+const ACCESS_TOKEN_MAX_AGE = 15 * 60 // 15 minutes
+const REFRESH_TOKEN_MAX_AGE = 7 * 24 * 60 * 60 // 7 days
+
+export const AuthModule: any = new Elysia({ prefix: '/api/auth' })
   .use(
     jwt({
       secret: env.JWT_SECRET,
-      exp: "15m",
+      exp: '15m',
     }),
   )
   .post(
-    "/signup",
+    '/signup',
     async ({
       jwt,
       body,
@@ -28,31 +40,25 @@ export const AuthModule: any = new Elysia({ prefix: "/api/auth" })
       set,
       status,
     }) => {
-      const user = await saveUser(body);
-      const token = await jwt.sign({ userId: user.userId });
+      const user = await saveUser(body)
+      const token = await jwt.sign({ userId: user.userId })
 
       accessToken?.set({
+        ...COOKIE_OPTIONS,
         value: token,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 15 * 60,
-        path: "/",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "none",
-      });
+        maxAge: ACCESS_TOKEN_MAX_AGE,
+      })
 
       refreshToken?.set({
+        ...COOKIE_OPTIONS,
         value: user.refreshToken,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60,
-        path: "/",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "none",
-      });
-      set.headers["content-type"] = "application/json";
+        maxAge: REFRESH_TOKEN_MAX_AGE,
+      })
+      set.headers['content-type'] = 'application/json'
 
       return status(201, {
         accessToken: token,
-      });
+      })
     },
     {
       body: SignUpSchema,
@@ -61,63 +67,60 @@ export const AuthModule: any = new Elysia({ prefix: "/api/auth" })
           accessToken: z.jwt(),
         }),
         409: z.object({
-          message: z.string().default("User with this email already exists"),
+          message: z.string().default('User with this email already exists'),
         }),
       },
       detail: {
-        summary: "Sign Up",
-        description: "User sign-up endpoint",
-        tags: ["Auth"],
+        summary: 'Sign Up',
+        description: 'User sign-up endpoint',
+        tags: ['Auth'],
       },
     },
   )
   .post(
-    "/sign-in",
+    '/sign-in',
     async ({ jwt, body, cookie: { accessToken, refreshToken }, set }) => {
-      const user = await signInUser(body);
-      const token = await jwt.sign({ userId: user.userId });
+      const user = await signInUser(body)
+      const token = await jwt.sign({ userId: user.userId })
 
       accessToken?.set({
+        ...COOKIE_OPTIONS,
         value: token,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 15 * 60,
-        path: "/",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "none",
-      });
+        maxAge: ACCESS_TOKEN_MAX_AGE,
+      })
 
       refreshToken?.set({
+        ...COOKIE_OPTIONS,
         value: user.refreshToken,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60,
-        path: "/",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "none",
-      });
-      set.headers["content-type"] = "application/json";
+        maxAge: REFRESH_TOKEN_MAX_AGE,
+      })
+      set.headers['content-type'] = 'application/json'
       return {
         accessToken: token,
-      };
+      }
     },
     {
-      body: SignUpSchema.pick({ email: true, password: true }),
+      body: z.object({
+        email: z.email(),
+        password: z.string().min(6),
+      }),
       response: {
         200: z.object({
           accessToken: z.jwt(),
         }),
         400: z.object({
-          message: z.string().default("Invalid email or password"),
+          message: z.string().default('Invalid email or password'),
         }),
       },
       detail: {
-        summary: "Sign In",
-        description: "User sign-in endpoint",
-        tags: ["Auth"],
+        summary: 'Sign In',
+        description: 'User sign-in endpoint',
+        tags: ['Auth'],
       },
     },
   )
   .post(
-    "/change-password",
+    '/change-password',
     async ({
       jwt,
       body,
@@ -127,44 +130,38 @@ export const AuthModule: any = new Elysia({ prefix: "/api/auth" })
       set,
     }) => {
       const token: string | undefined =
-        typeof authorization === "string"
+        typeof authorization === 'string'
           ? authorization
-          : typeof accessToken?.value === "string"
+          : typeof accessToken?.value === 'string'
             ? accessToken.value
-            : undefined;
-      const jwtUser = await jwt.verify(token);
+            : undefined
+      const jwtUser = await jwt.verify(token)
       if (!jwtUser) {
-        set.headers["content-type"] = "application/json";
+        set.headers['content-type'] = 'application/json'
         return status(401, {
-          message: "Unauthorized",
-        });
+          message: 'Unauthorized',
+        })
       }
-      const newAccessToken = await jwt.sign({ userId: jwtUser.userId });
+      const newAccessToken = await jwt.sign({ userId: jwtUser.userId })
       const { rawRefreshToken } = await changePassword(
         body,
         jwtUser.userId as string,
-      );
+      )
 
       accessToken?.set({
+        ...COOKIE_OPTIONS,
         value: newAccessToken,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 15 * 60,
-        path: "/",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "none",
-      });
+        maxAge: ACCESS_TOKEN_MAX_AGE,
+      })
 
       refreshToken?.set({
+        ...COOKIE_OPTIONS,
         value: rawRefreshToken,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60,
-      });
+        maxAge: REFRESH_TOKEN_MAX_AGE,
+      })
 
-      set.headers["content-type"] = "application/json";
-      return { message: "Password updated", accessToken: newAccessToken };
+      set.headers['content-type'] = 'application/json'
+      return { message: 'Password updated', accessToken: newAccessToken }
     },
     {
       body: ChangePasswordSchema,
@@ -174,52 +171,47 @@ export const AuthModule: any = new Elysia({ prefix: "/api/auth" })
           accessToken: z.string(),
         }),
         401: z.object({
-          message: z.string().default("Unauthorized"),
+          message: z.string().default('Unauthorized'),
         }),
         400: z.object({
-          message: z.string().default("Current password is incorrect"),
+          message: z.string().default('Current password is incorrect'),
         }),
       },
       detail: {
-        summary: "Change Password",
-        description: "User change password endpoint",
-        tags: ["Auth"],
+        summary: 'Change Password',
+        description: 'User change password endpoint',
+        tags: ['Auth'],
       },
     },
   )
   .post(
-    "/refresh-tokens",
+    '/refresh-tokens',
     async ({ cookie: { refreshToken, accessToken }, status, jwt, set }) => {
       if (!refreshToken?.value) {
         return status(401, {
-          message: "Unauthorized: No refresh token provided",
-        });
+          hasRefreshToken: false,
+          message: 'Unauthorized: No refresh token provided',
+        })
       }
       const { userId, newRawToken } = await refreshTokens(
         refreshToken?.value as string,
-      );
-      const newAccessToken = await jwt.sign({ userId });
+      )
+      const newAccessToken = await jwt.sign({ userId })
 
       accessToken?.set({
+        ...COOKIE_OPTIONS,
         value: newAccessToken,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 15 * 60,
-        path: "/",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "none",
-      });
+        maxAge: ACCESS_TOKEN_MAX_AGE,
+      })
 
       refreshToken?.set({
+        ...COOKIE_OPTIONS,
         value: newRawToken,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60,
-      });
+        maxAge: REFRESH_TOKEN_MAX_AGE,
+      })
 
-      set.headers["content-type"] = "application/json";
-      return { accessToken: newAccessToken };
+      set.headers['content-type'] = 'application/json'
+      return { accessToken: newAccessToken }
     },
     {
       cookie: z.object({
@@ -239,52 +231,47 @@ export const AuthModule: any = new Elysia({ prefix: "/api/auth" })
           accessToken: z.jwt(),
         }),
         401: z.object({
-          message: z.string().default("Unauthorized: Invalid refresh token"),
+          hasRefreshToken: z.boolean(),
+          message: z.string().default('Unauthorized: Invalid refresh token'),
         }),
       },
       detail: {
-        summary: "Refresh Tokens",
-        description: "Generate new access and refresh tokens",
-        tags: ["Auth"],
+        summary: 'Refresh Tokens',
+        description: 'Generate new access and refresh tokens',
+        tags: ['Auth'],
       },
     },
   )
   .post(
-    "/logout",
+    '/logout',
     async ({ cookie: { accessToken, refreshToken }, body, set, status }) => {
       // Prefer the refresh token cookie; allow body.refreshToken as fallback.
       const rawRefreshToken: string | undefined =
-        typeof refreshToken?.value === "string"
+        typeof refreshToken?.value === 'string'
           ? refreshToken.value
-          : body && typeof (body as any).refreshToken === "string"
+          : body && typeof (body as any).refreshToken === 'string'
             ? (body as any).refreshToken
-            : undefined;
-      const allDevices = !!(body && (body as any).allDevices);
+            : undefined
+      const allDevices = !!(body && (body as any).allDevices)
 
       // Revoke token(s) server-side (idempotent)
-      await logout(rawRefreshToken, { allDevices });
+      await logout(rawRefreshToken, { allDevices })
 
       // Clear cookies client-side
       accessToken?.set({
-        value: "",
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        ...COOKIE_OPTIONS,
+        value: '',
         maxAge: 0,
-        path: "/",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "none",
-      });
+      })
 
       refreshToken?.set({
-        value: "",
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        ...COOKIE_OPTIONS,
+        value: '',
         maxAge: 0,
-        path: "/",
-        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-      });
+      })
 
-      set.headers["content-type"] = "application/json";
-      return status(200, { message: "Logged out" });
+      set.headers['content-type'] = 'application/json'
+      return status(200, { message: 'Logged out' })
     },
     {
       body: z
@@ -296,15 +283,15 @@ export const AuthModule: any = new Elysia({ prefix: "/api/auth" })
         200: z.object({ message: z.string() }),
       },
       detail: {
-        summary: "Logout",
+        summary: 'Logout',
         description:
-          "Logs out the current session (and optionally all devices)",
-        tags: ["Auth"],
+          'Logs out the current session (and optionally all devices)',
+        tags: ['Auth'],
       },
     },
   )
   .get(
-    "/me",
+    '/me',
     async ({
       jwt,
       cookie: { accessToken },
@@ -312,27 +299,27 @@ export const AuthModule: any = new Elysia({ prefix: "/api/auth" })
       status,
     }) => {
       const token: string | undefined =
-        typeof authorization === "string"
+        typeof authorization === 'string'
           ? authorization
-          : typeof accessToken?.value === "string"
+          : typeof accessToken?.value === 'string'
             ? accessToken.value
-            : undefined;
-      const user = await jwt.verify(token);
+            : undefined
+      const user = await jwt.verify(token)
       if (!user) {
-        return status(401, { message: "Unauthorized" });
+        return status(401, { message: 'Unauthorized' })
       }
-      return await getUser(user?.userId as string);
+      return await getUser(user?.userId as string)
     },
     {
       response: {
         401: z.object({
-          message: z.string().default("Unauthorized"),
+          message: z.string().default('Unauthorized'),
         }),
       },
       detail: {
-        summary: "Get User Info",
-        description: "Retrieve information about the authenticated user",
-        tags: ["Auth"],
+        summary: 'Get User Info',
+        description: 'Retrieve information about the authenticated user',
+        tags: ['Auth'],
       },
     },
-  );
+  )

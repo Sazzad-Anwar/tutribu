@@ -31,10 +31,11 @@ model Booking {
   checkingType      CheckingType     @default(SELF)
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  extraFeatures     ExtraFeature[]
   promotionalCode   PromotionalCode? @relation(fields: [promotionalCodeId], references: [id])
   user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   promotionalCodeId String?
+  userInfoId        String
+  userInfo          UserInfo         @relation(fields: [userInfoId], references: [id])
 
   @@index([userId])
   @@index([userId, createdAt])
@@ -43,20 +44,7 @@ model Booking {
   @@index([promotionalCodeId])
   @@index([createdAt])
   @@index([groupId, status])
-}
-
-model ExtraFeature {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  price       Float
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  booking     Booking? @relation(fields: [bookingId], references: [id])
-  bookingId   String?
-
-  // Index for fast lookup of features by booking
-  @@index([bookingId])
+  @@index([userInfoId])
 }
 
 model PromotionalCode {
