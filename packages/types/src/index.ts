@@ -101,3 +101,29 @@ export type CreateBookingInput = z.infer<typeof CreateBookingSchema>
 export type ApplyPromoInput = z.infer<typeof ApplyPromoSchema>
 export type ExtraFeatureInput = z.infer<typeof ExtraFeatureSchema>
 export type UpdateStatusInput = z.infer<typeof UpdateStatusSchema>
+
+export const CreatePromotionalCodeSchema = z.object({
+  code: z
+    .string()
+    .min(1)
+    .regex(/^[A-Z0-9_-]+$/, 'Code must be uppercase alphanumeric'),
+  discount: z.number().min(0),
+  validFrom: z.string().datetime(),
+  validTo: z.string().datetime(),
+})
+
+export const UpdatePromotionalCodeSchema = CreatePromotionalCodeSchema.partial()
+
+export const PromotionalCodeSchema = CreatePromotionalCodeSchema.extend({
+  id: z.string().cuid(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+})
+
+export type CreatePromotionalCodeInput = z.infer<
+  typeof CreatePromotionalCodeSchema
+>
+export type UpdatePromotionalCodeInput = z.infer<
+  typeof UpdatePromotionalCodeSchema
+>
+export type PromotionalCode = z.infer<typeof PromotionalCodeSchema>

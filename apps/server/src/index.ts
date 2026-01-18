@@ -4,6 +4,7 @@ import { env } from '@tutribu/env/server'
 import { Elysia } from 'elysia'
 import { AuthModule } from './modules/auth'
 import { BookingModule } from './modules/booking'
+import { PromoCodeModule } from './modules/promo-code'
 
 new Elysia()
   .use(
@@ -55,6 +56,7 @@ new Elysia()
   )
   .use(AuthModule)
   .use(BookingModule)
+  .use(PromoCodeModule)
   .listen(3000, () => {
     console.log('Server is running on http://localhost:3000')
   })

@@ -1,12 +1,8 @@
-import { stripeClient } from "@/lib/stripe";
-import db from "@tutribu/db";
-import type {
-  BookingSchema,
-  CreateBookingInput,
-  ExtraFeatureInput,
-} from "@tutribu/types";
-import { status } from "elysia";
-import type z from "zod";
+import { stripeClient } from '@/lib/stripe'
+import db from '@tutribu/db'
+import type { BookingSchema, CreateBookingInput } from '@tutribu/types'
+import { status } from 'elysia'
+import type z from 'zod'
 
 /**
  * Booking service functions
@@ -34,47 +30,54 @@ import type z from "zod";
  *  - now is between validFrom and validTo (inclusive)
  */
 export async function getValidPromotionalCodeByCode(code: string) {
-  if (!code) return null;
+  if (!code) return null
   const promo = await db.promotionalCode.findUnique({
     where: { code },
-  });
+  })
 
-  if (!promo) return null;
+  if (!promo) return null
 
-  const now = new Date();
+  const now = new Date()
   if (promo.validFrom > now || promo.validTo < now) {
-    return null;
+    return null
   }
 
-  return promo;
+  return promo
 }
 
 const createPaymentMethod = async (
   cardDetails: z.infer<typeof BookingSchema.shape.cardDetails>,
   userId: string,
 ) => {
-  const user = await db.user.findUnique({ where: { id: userId } });
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    include: { userInfo: true },
+  })
+
+  // Safe navigation in case userInfo is null (though we try to ensure it exists)
+  const billingDetails = {
+    name: `${user?.firstName} ${user?.lastName}`,
+    email: user?.email,
+    phone: user?.userInfo?.phoneNumber || undefined,
+    address: {
+      line1: user?.userInfo?.address || undefined,
+      postal_code: user?.userInfo?.zipCode || undefined,
+      city: user?.userInfo?.city || undefined,
+      country: user?.userInfo?.country || undefined,
+    },
+  }
+
   await stripeClient.paymentMethods.create({
-    type: "card",
+    type: 'card',
     card: {
       number: cardDetails.number,
       exp_month: cardDetails.exp_month,
       exp_year: cardDetails.exp_year,
       cvc: cardDetails.cvc,
     },
-    billing_details: {
-      name: `${user?.firstName} ${user?.lastName}`,
-      email: user?.email,
-      phone: user?.phoneNumber || undefined,
-      address: {
-        line1: user?.address || undefined,
-        postal_code: user?.zipCode || undefined,
-        city: user?.city || undefined,
-        country: user?.country || undefined,
-      },
-    },
-  });
-};
+    billing_details: billingDetails,
+  })
+}
 
 /**
  * Create a booking with optional extra features and optional promotional code.
@@ -89,35 +92,46 @@ const createPaymentMethod = async (
 export async function createBooking(input: CreateBookingInput) {
   // Basic validation
   if (!input.userId) {
-    throw status(400, { message: "userId is required" });
+    throw status(400, { message: 'userId is required' })
+  }
+
+  // Ensure user exists and has userInfo
+  const user = await db.user.findUnique({
+    where: { id: input.userId },
+    include: { userInfo: true },
+  })
+  if (!user) {
+    throw status(400, { message: 'User not found' })
+  }
+
+  let userInfoId = user.userInfoId
+  if (!userInfoId) {
+    const newUserInfo = await db.userInfo.create({ data: {} })
+    userInfoId = newUserInfo.id
+    await db.user.update({
+      where: { id: user.id },
+      data: { userInfoId },
+    })
   }
   if (!input.groupId) {
-    throw status(400, { message: "groupId is required" });
+    throw status(400, { message: 'groupId is required' })
   }
   if (
-    typeof input.totalAmount !== "number" ||
+    typeof input.totalAmount !== 'number' ||
     Number.isNaN(input.totalAmount)
   ) {
-    throw status(400, { message: "totalAmount must be a number" });
+    throw status(400, { message: 'totalAmount must be a number' })
   }
 
   // If promotional code provided, validate it and apply its discount
-  let promotionalCodeId: string | null = null;
+  let promotionalCodeId: string | null = null
   if (input.promotionalCode) {
-    const promo = await getValidPromotionalCodeByCode(input.promotionalCode);
+    const promo = await getValidPromotionalCodeByCode(input.promotionalCode)
     if (!promo) {
-      throw status(400, { message: "Invalid or expired promotional code" });
+      throw status(400, { message: 'Invalid or expired promotional code' })
     }
-    promotionalCodeId = promo.id;
+    promotionalCodeId = promo.id
   }
-
-  // Prepare nested create for extraFeatures if any
-  const extraFeaturesData =
-    input.extraFeatures?.map((f) => ({
-      name: f.name,
-      description: f.description ?? null,
-      price: f.price,
-    })) ?? [];
 
   // Apply promotional discount (interpreted as absolute discount)
   const discount = promotionalCodeId
@@ -126,38 +140,35 @@ export async function createBooking(input: CreateBookingInput) {
           where: { id: promotionalCodeId },
         })
       )?.discount ?? 0)
-    : 0;
+    : 0
 
-  const finalTotal = Math.max(0, input.totalAmount - discount);
+  const finalTotal = Math.max(0, input.totalAmount - discount)
 
-  // Create booking and any extra features in a transaction
+  // Create booking in a transaction
   const created = await db.$transaction(async (tx) => {
     const booking = await tx.booking.create({
       data: {
         userId: input.userId,
+        userInfoId: userInfoId!,
         groupId: input.groupId,
         totalAmount: finalTotal,
         specialRequest: input.specialRequest ?? null,
-        paymentPlan: input.paymentPlan ?? "ONE_TIME",
-        checkingType: input.checkingType ?? "SELF",
-        status: input.status ?? "PENDING",
+        paymentPlan: input.paymentPlan ?? 'ONE_TIME',
+        checkingType: input.checkingType ?? 'SELF',
+        status: input.status ?? 'PENDING',
         promotionalCodeId,
-        extraFeatures: {
-          create: extraFeaturesData,
-        },
       },
       include: {
-        extraFeatures: true,
         promotionalCode: true,
       },
-    });
+    })
 
-    return booking;
-  });
+    return booking
+  })
 
-  await createPaymentMethod(input.cardDetails, input.userId);
+  await createPaymentMethod(input.cardDetails, input.userId)
 
-  return created;
+  return created
 }
 
 /**
@@ -166,26 +177,25 @@ export async function createBooking(input: CreateBookingInput) {
  */
 export async function getBookingById(bookingId: string, ownerId?: string) {
   if (!bookingId) {
-    throw status(400, { message: "bookingId is required" });
+    throw status(400, { message: 'bookingId is required' })
   }
 
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
     include: {
-      extraFeatures: true,
       promotionalCode: true,
     },
-  });
+  })
 
   if (!booking) {
-    throw status(404, { message: "Booking not found" });
+    throw status(404, { message: 'Booking not found' })
   }
 
   if (ownerId && booking.userId !== ownerId) {
-    throw status(403, { message: "Forbidden" });
+    throw status(403, { message: 'Forbidden' })
   }
 
-  return booking;
+  return booking
 }
 
 /**
@@ -193,70 +203,18 @@ export async function getBookingById(bookingId: string, ownerId?: string) {
  */
 export async function listBookingsForUser(userId: string) {
   if (!userId) {
-    throw status(400, { message: "userId is required" });
+    throw status(400, { message: 'userId is required' })
   }
 
   const bookings = await db.booking.findMany({
     where: { userId },
     include: {
-      extraFeatures: true,
       promotionalCode: true,
     },
-    orderBy: { createdAt: "desc" },
-  });
+    orderBy: { createdAt: 'desc' },
+  })
 
-  return bookings;
-}
-
-/**
- * Add an extra feature to a booking and increment the booking's totalAmount by the feature price.
- * Returns the created ExtraFeature and the updated Booking (with new total).
- */
-export async function addExtraFeatureToBooking(
-  bookingId: string,
-  feature: ExtraFeatureInput,
-) {
-  if (!bookingId) {
-    throw status(400, { message: "bookingId is required" });
-  }
-  if (!feature || !feature.name || typeof feature.price !== "number") {
-    throw status(400, { message: "feature must include name and price" });
-  }
-
-  const booking = await db.booking.findUnique({ where: { id: bookingId } });
-  if (!booking) {
-    throw status(404, { message: "Booking not found" });
-  }
-
-  // Use a transaction to ensure both operations succeed or fail together
-  const [createdFeature, updatedBooking] = await db.$transaction(async (tx) => {
-    const createdFeature = await tx.extraFeature.create({
-      data: {
-        name: feature.name,
-        description: feature.description ?? null,
-        price: feature.price,
-        bookingId,
-      },
-    });
-
-    // compute new total based on current booking value to avoid relying on Prisma types
-    const newTotal = booking.totalAmount + feature.price;
-
-    const updatedBooking = await tx.booking.update({
-      where: { id: bookingId },
-      data: {
-        totalAmount: newTotal,
-      },
-      include: {
-        extraFeatures: true,
-        promotionalCode: true,
-      },
-    });
-
-    return [createdFeature, updatedBooking];
-  });
-
-  return { createdFeature, updatedBooking };
+  return bookings
 }
 
 /**
@@ -270,28 +228,28 @@ export async function applyPromotionalCodeToBooking(
   code: string,
 ) {
   if (!bookingId || !code) {
-    throw status(400, { message: "bookingId and code are required" });
+    throw status(400, { message: 'bookingId and code are required' })
   }
 
   const [booking, promo] = await Promise.all([
     db.booking.findUnique({ where: { id: bookingId } }),
     getValidPromotionalCodeByCode(code),
-  ]);
+  ])
 
   if (!booking) {
-    throw status(404, { message: "Booking not found" });
+    throw status(404, { message: 'Booking not found' })
   }
   if (!promo) {
-    throw status(400, { message: "Invalid or expired promotional code" });
+    throw status(400, { message: 'Invalid or expired promotional code' })
   }
   if (booking.promotionalCodeId) {
     throw status(400, {
-      message: "Promotional code already applied to this booking",
-    });
+      message: 'Promotional code already applied to this booking',
+    })
   }
 
   // Apply discount as absolute amount
-  const newTotal = Math.max(0, booking.totalAmount - promo.discount);
+  const newTotal = Math.max(0, booking.totalAmount - promo.discount)
 
   const updated = await db.booking.update({
     where: { id: bookingId },
@@ -300,12 +258,11 @@ export async function applyPromotionalCodeToBooking(
       totalAmount: newTotal,
     },
     include: {
-      extraFeatures: true,
       promotionalCode: true,
     },
-  });
+  })
 
-  return updated;
+  return updated
 }
 
 /**
@@ -313,24 +270,24 @@ export async function applyPromotionalCodeToBooking(
  */
 export async function updateBookingStatus(
   bookingId: string,
-  statusValue: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED",
+  statusValue: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED',
 ) {
   if (!bookingId) {
-    throw status(400, { message: "bookingId is required" });
+    throw status(400, { message: 'bookingId is required' })
   }
 
-  const booking = await db.booking.findUnique({ where: { id: bookingId } });
+  const booking = await db.booking.findUnique({ where: { id: bookingId } })
   if (!booking) {
-    throw status(404, { message: "Booking not found" });
+    throw status(404, { message: 'Booking not found' })
   }
 
   const updated = await db.booking.update({
     where: { id: bookingId },
     data: { status: statusValue },
-    include: { extraFeatures: true, promotionalCode: true },
-  });
+    include: { promotionalCode: true },
+  })
 
-  return updated;
+  return updated
 }
 
 /**
@@ -343,14 +300,14 @@ export async function removePromotionalCodeFromBooking(
   bookingId: string,
   restoreTotalAmount?: number,
 ) {
-  const booking = await db.booking.findUnique({ where: { id: bookingId } });
+  const booking = await db.booking.findUnique({ where: { id: bookingId } })
   if (!booking) {
-    throw status(404, { message: "Booking not found" });
+    throw status(404, { message: 'Booking not found' })
   }
   if (!booking.promotionalCodeId) {
     throw status(400, {
-      message: "No promotional code applied to this booking",
-    });
+      message: 'No promotional code applied to this booking',
+    })
   }
 
   const updated = await db.booking.update({
@@ -360,28 +317,8 @@ export async function removePromotionalCodeFromBooking(
       // If caller supplied a restoreTotalAmount use it; otherwise keep the existing total
       totalAmount: restoreTotalAmount ?? booking.totalAmount,
     },
-    include: { extraFeatures: true, promotionalCode: true },
-  });
+    include: { promotionalCode: true },
+  })
 
-  return updated;
-}
-
-/**
- * List promotional codes (optionally only active ones).
- */
-export async function listPromotionalCodes(activeOnly = true) {
-  const now = new Date();
-  const where = activeOnly
-    ? {
-        validFrom: { lte: now },
-        validTo: { gte: now },
-      }
-    : undefined;
-
-  const promos = await db.promotionalCode.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-  });
-
-  return promos;
+  return updated
 }

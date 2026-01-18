@@ -57,18 +57,35 @@ export const saveUser = async (signupinput: SignUpInput) => {
   const refreshToken = generateRefreshToken()
   const hashedRefreshToken = await hashToken(refreshToken)
 
-  // Here you would save the user to your database
-  const user = {
-    ...signupinput,
-    password: hashedPassword,
-  }
+  // Separate user data and user info data
+  const {
+    phoneNumber,
+    dateOfBirth,
+    country,
+    address,
+    zipCode,
+    city,
+    ...userData
+  } = signupinput
 
   const createdUser = await db.user.create({
     data: {
-      ...user,
-      dateOfBirth: user.dateOfBirth
-        ? new Date(user.dateOfBirth).toISOString()
-        : undefined,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      password: hashedPassword,
+      avatarUrl: userData.avatarUrl || null,
+      authProvider: 'PASSWORD',
+      userInfo: {
+        create: {
+          phoneNumber,
+          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+          country,
+          address,
+          zipCode,
+          city,
+        },
+      },
     },
   })
 
@@ -245,24 +262,21 @@ export const refreshTokens = async (rawRefreshToken: string) => {
 export const getUser = async (userId: string) => {
   const user = await db.user.findUnique({
     where: { id: userId },
-    select: {
-      id: true,
-      firstName: true,
-      lastName: true,
-      email: true,
-      dateOfBirth: true,
-      country: true,
-      address: true,
-      zipCode: true,
-      city: true,
-      createdAt: true,
-      updatedAt: true,
-      authProvider: true,
-      customerId: true,
+    include: {
+      userInfo: true,
     },
   })
 
-  return user!
+  if (!user) {
+    throw status(404, { message: 'User not found' })
+  }
+
+  const { userInfo, ...userFields } = user
+
+  return {
+    ...userFields,
+    ...userInfo,
+  }
 }
 
 /**
