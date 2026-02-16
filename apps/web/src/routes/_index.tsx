@@ -4,22 +4,7 @@ import type { Route } from './+types/_index'
 import { axios } from '../lib/utils'
 import Header from '../components/header'
 import UserBookingSignup from '../components/user-booking-signup'
-
-const TITLE_TEXT = `
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- `
+import Footer from '../components/footer'
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -29,8 +14,14 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
-  const { user } = useAuth()
+  const { checkAuth } = useAuth()
 
+  useEffect(() => {
+    const checkAuthHandler = async () => {
+      await checkAuth()
+    }
+    checkAuthHandler()
+  }, [])
   return (
     <main>
       <Header />
@@ -54,7 +45,7 @@ export default function Home() {
               <h1 className="font-bold text-3xl lg:text-4xl xl:text-[54px] font-tinos mb-2.5">
                 Ultimate Argentina
               </h1>
-              <p className="text-sm lg:text-md xl:text-lg font-normal">
+              <p className="text-sm lg:text-base xl:text-lg font-normal">
                 Ultimate Argentina is a four-day journey through the heart and
                 soul of this vibrant nation — blending culture, nature, and
                 flavor into one unforgettable experience. From the tango-filled
@@ -91,6 +82,7 @@ export default function Home() {
       <section className="container mx-auto lg:py-12 xl:py-24">
         <UserBookingSignup />
       </section>
+      <Footer />
     </main>
   )
 }

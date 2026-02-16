@@ -1,9 +1,14 @@
-import { type SignInInput, type SignUpInput, type User } from '@tutribu/types'
-import { toast } from 'sonner'
+import {
+  type SignInInput,
+  type SignUpInput,
+  type User,
+  type UserInfo,
+} from '@tutribu/types'
 import { isAxiosError } from 'axios'
 import { axios } from './utils'
 
-const API_URL = '/api/auth'
+const API_AUTH_URL = '/api/auth'
+const API_USER_INFO = '/api/user-info'
 
 type AuthResponse<T> = {
   accessToken?: string
@@ -16,7 +21,7 @@ export const authClient = {
     data: SignUpInput,
   ): Promise<AuthResponse<{ accessToken: string }>> => {
     try {
-      const response = await axios.post(`${API_URL}/signup`, data)
+      const response = await axios.post(`${API_AUTH_URL}/signup`, data)
       return response.data
     } catch (error) {
       if (isAxiosError(error)) {
@@ -29,13 +34,26 @@ export const authClient = {
   signIn: async (
     data: SignInInput,
   ): Promise<AuthResponse<{ accessToken: string }>> => {
-    console.log(API_URL)
     try {
-      const response = await axios.post(`${API_URL}/sign-in`, data)
+      const response = await axios.post(`${API_AUTH_URL}/sign-in`, data)
       return response.data
     } catch (error) {
       if (isAxiosError(error)) {
         throw new Error(error.response?.data?.message || 'Failed to sign in')
+      }
+      throw error
+    }
+  },
+
+  updateProfile: async (data: UserInfo) => {
+    try {
+      const response = await axios.patch(`${API_USER_INFO}/${data.id}`, data)
+      return response.data
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message || 'Failed to update profile',
+        )
       }
       throw error
     }

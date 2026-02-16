@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { authClient } from '@/lib/auth-client'
 import { SignUpSchema } from '@tutribu/types'
@@ -57,9 +57,11 @@ export default function SignUpPage() {
     }
   }
 
-  if (isAuthenticated) {
-    navigate('/')
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/')
+    }
+  }, [isAuthenticated, navigate])
 
   return (
     <section
@@ -74,11 +76,13 @@ export default function SignUpPage() {
         <Card className="pt-5 md:pb-10 px-2 md:px-5 w-full md:w-[600px] bg-white md:rounded-[20px]">
           <CardHeader>
             <CardTitle className="mb-5 md:mb-7 flex justify-center items-center">
-              <img
-                src="/images/logo.svg"
-                alt="Logo"
-                className="h-16 w-[182px]"
-              />
+              <Link to="/">
+                <img
+                  src="/images/logo.svg"
+                  alt="Logo"
+                  className="h-16 w-[182px]"
+                />
+              </Link>
             </CardTitle>
             <CardDescription className="space-y-7">
               <h1 className="font-medium text-2xl text-primary text-center">
@@ -216,55 +220,95 @@ export default function SignUpPage() {
                     </Field>
                   )}
                 />
-                <Controller
-                  name="password"
-                  control={form.control}
-                  render={({ field, fieldState }) => (
-                    <Field className="mb-0 w-full">
-                      <div className="flex justify-between items-center">
-                        <FieldLabel
-                          htmlFor="password"
-                          className="text-base leading-[120%] font-semibold"
-                        >
-                          Password
-                        </FieldLabel>
-                        <Link
-                          className="text-brand text-sm underline"
-                          to="/forgot-password"
-                        >
-                          Forgot Password?
-                        </Link>
-                      </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Controller
+                    name="password"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field className="mb-0 w-full">
+                        <div className="flex justify-between items-center">
+                          <FieldLabel
+                            htmlFor="password"
+                            className="text-base leading-[120%] font-semibold"
+                          >
+                            Password
+                          </FieldLabel>
+                        </div>
 
-                      <div className="relative">
-                        <Input
-                          id="password"
-                          type={showPassword ? 'text' : 'password'}
-                          aria-invalid={fieldState.invalid}
-                          placeholder="Password"
-                          autoComplete="off"
-                          className="border focus-visible:border-brand rounded-[10px] border-brand px-6 py-5 h-14 text-lg  placeholder:text-black/30 w-full placeholder:text-lg"
-                          {...field}
-                          value={field.value || ''}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                        >
-                          {showPassword ? (
-                            <EyeOff className="size-6" />
-                          ) : (
-                            <Eye className="size-6" />
-                          )}
-                        </button>
-                      </div>
-                      {fieldState.invalid && (
-                        <FieldError errors={[fieldState.error]} />
-                      )}
-                    </Field>
-                  )}
-                />
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            aria-invalid={fieldState.invalid}
+                            placeholder="Password"
+                            autoComplete="off"
+                            className="border focus-visible:border-[#C1C1C1] rounded-[10px] border-[#C1C1C1] px-6 py-5 h-14 text-lg  placeholder:text-black/30 w-full placeholder:text-lg"
+                            {...field}
+                            value={field.value || ''}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="size-6" />
+                            ) : (
+                              <Eye className="size-6" />
+                            )}
+                          </button>
+                        </div>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                  <Controller
+                    name="confirmPassword"
+                    control={form.control}
+                    render={({ field, fieldState }) => (
+                      <Field className="mb-0 w-full">
+                        <div className="flex justify-between items-center">
+                          <FieldLabel
+                            htmlFor="confirmPassword"
+                            className="text-base leading-[120%] font-semibold"
+                          >
+                            Confirm Password
+                          </FieldLabel>
+                        </div>
+
+                        <div className="relative">
+                          <Input
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            aria-invalid={fieldState.invalid}
+                            placeholder="Password"
+                            autoComplete="off"
+                            className="border focus-visible:border-[#C1C1C1] rounded-[10px] border-[#C1C1C1] px-6 py-5 h-14 text-lg  placeholder:text-black/30 w-full placeholder:text-lg"
+                            {...field}
+                            value={field.value || ''}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="size-6" />
+                            ) : (
+                              <Eye className="size-6" />
+                            )}
+                          </button>
+                        </div>
+                        {fieldState.invalid && (
+                          <FieldError errors={[fieldState.error]} />
+                        )}
+                      </Field>
+                    )}
+                  />
+                </div>
+
                 <div className="flex items-center space-x-2 mb-0">
                   <Checkbox
                     className="size-6 rounded-sm data-checked:bg-brand data-checked:border-brand"

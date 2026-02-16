@@ -70,20 +70,21 @@ export const saveUser = async (signupinput: SignUpInput) => {
 
   const createdUser = await db.user.create({
     data: {
-      firstName: userData.firstName,
-      lastName: userData.lastName,
       email: userData.email,
       password: hashedPassword,
       avatarUrl: userData.avatarUrl || null,
       authProvider: 'PASSWORD',
-      userInfo: {
+      userInfos: {
         create: {
+          firstName: userData.firstName,
+          lastName: userData.lastName,
           phoneNumber,
           dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
           country,
           address,
           zipCode,
           city,
+          userType: 'SELF',
         },
       },
     },
@@ -263,7 +264,7 @@ export const getUser = async (userId: string) => {
   const user = await db.user.findUnique({
     where: { id: userId },
     include: {
-      userInfo: true,
+      userInfos: true,
     },
   })
 
@@ -271,7 +272,8 @@ export const getUser = async (userId: string) => {
     throw status(404, { message: 'User not found' })
   }
 
-  const { userInfo, ...userFields } = user
+  const { userInfos, ...userFields } = user
+  const userInfo = userInfos?.[0] || {}
 
   return {
     ...userFields,

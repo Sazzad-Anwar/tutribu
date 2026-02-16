@@ -17,6 +17,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  console.log('inside from auth provider')
+
   const checkAuth = async () => {
     try {
       const { data } = await axios.get<User>('/api/auth/me')

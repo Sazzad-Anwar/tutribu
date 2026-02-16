@@ -5,8 +5,9 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./src/*"]
     },
-    "jsx": "react-jsx",
+    "jsx": "react-jsx"
   },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.json"]
 }

@@ -35,8 +35,6 @@ export default function Header() {
     { to: '/support', label: 'Support' },
   ]
 
-  console.log({ isAuthenticated })
-
   return (
     <header className="container h-auto lg:h-[100px] mx-auto my-auto py-5">
       <div className="flex flex-row items-center justify-between">
@@ -117,14 +115,22 @@ export default function Header() {
                         size="icon-xs"
                         className="px-0 py-0 m-0 size-6 xl:size-8 border-0 ring-0"
                       >
-                        <CalendarDays className="size-6 xl:size-8" />
+                        <img
+                          src="/images/calendar-icon.svg"
+                          className="size-6 xl:size-8"
+                          alt="Calendar"
+                        />
                       </Button>
                       <Button
                         variant="link"
                         size="icon-xs"
                         className="px-0 py-0 m-0 size-6 xl:size-8 border-0 ring-0"
                       >
-                        <Heart className="size-6 xl:size-8" />
+                        <img
+                          src="/images/love-icon.svg"
+                          className="size-6 xl:size-8"
+                          alt="Heart"
+                        />
                       </Button>
                       <DropdownMenu modal={false}>
                         <DropdownMenuTrigger>

@@ -1,6 +1,6 @@
 import z from 'zod'
 
-const BaseSignUpSchema = z.object({
+export const BaseSignUpSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.email('Invalid email address'),
@@ -13,6 +13,11 @@ const BaseSignUpSchema = z.object({
   zipCode: z.string().optional(),
   city: z.string().optional(),
   avatarUrl: z.url('Invalid URL format').optional(),
+})
+
+export const BookingSignUpSchema = BaseSignUpSchema.omit({
+  password: true,
+  confirmPassword: true,
 })
 
 export const SignUpSchema = BaseSignUpSchema.superRefine(
@@ -33,7 +38,7 @@ export const SignUpSchema = BaseSignUpSchema.superRefine(
 )
 
 export const UserSchema = BaseSignUpSchema.extend({
-  id: z.uuid(),
+  id: z.cuid(),
   authProvider: z.enum(['PASSWORD', 'GOOGLE']).default('PASSWORD'),
 }).omit({ password: true })
 export const SignInSchema = BaseSignUpSchema.pick({
@@ -54,26 +59,26 @@ export const ExtraFeatureSchema = z.object({
 })
 
 export const BookingSchema = z.object({
-  userId: z.cuid(),
+  userInfoId: z.cuid(),
   specialRequest: z.string().optional(),
-  hasOwnRoom: z.boolean().default(false),
-  joinWhatsAppGroup: z.boolean().default(false),
-  promotionalCode: z.cuid().optional(),
+  promotionalCode: z.string().optional(),
   status: z
     .enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'])
     .default('PENDING'),
   paymentPlan: z
-    .enum(['THREE_MONTH', 'SIX_MONTH', 'ONE_TIME'])
+    .enum(['THREE_MONTH', 'SIX_MONTH', 'ONE_TIME', 'LOWEST_DEPOSIT'])
     .default('ONE_TIME'),
   groupId: z.string(),
   checkingType: z.enum(['SELF', 'GUEST']).default('SELF'),
-  cardDetails: z.object({
-    number: z.string().min(12).max(19),
-    exp_month: z.number().min(1).max(12),
-    exp_year: z.number().min(new Date().getFullYear()),
-    cvc: z.string().min(3).max(4),
-  }),
-  extraFeatures: z.array(ExtraFeatureSchema).optional(),
+  cardDetails: z
+    .object({
+      number: z.string().min(12).max(19),
+      exp_month: z.number().min(1).max(12),
+      exp_year: z.number().min(new Date().getFullYear()),
+      cvc: z.string().min(3).max(4),
+    })
+    .optional(),
+  // extraFeatures: z.array(ExtraFeatureSchema).optional(),
 })
 
 /**
@@ -93,6 +98,7 @@ export const UpdateStatusSchema = z.object({
 })
 
 export type SignUpInput = z.infer<typeof SignUpSchema>
+export type BookingSignUpInput = z.infer<typeof BookingSignUpSchema>
 export type User = z.infer<typeof UserSchema>
 export type SignInInput = z.infer<typeof SignInSchema>
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>
@@ -127,3 +133,27 @@ export type UpdatePromotionalCodeInput = z.infer<
   typeof UpdatePromotionalCodeSchema
 >
 export type PromotionalCode = z.infer<typeof PromotionalCodeSchema>
+
+export const UserInfoSchema = z.object({
+  id: z.string().cuid(),
+  phoneNumber: z.string().optional().nullable(),
+  dateOfBirth: z.string().datetime().optional().nullable(),
+  firstName: z.string().optional().nullable(),
+  lastName: z.string().optional().nullable(),
+  country: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  zipCode: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  userType: z.enum(['SELF', 'GUEST']).default('SELF'),
+  userId: z.string().cuid().optional().nullable(),
+})
+
+export const CreateUserInfoSchema = UserInfoSchema.omit({
+  id: true,
+  userId: true,
+})
+export const UpdateUserInfoSchema = CreateUserInfoSchema.partial()
+
+export type UserInfo = z.infer<typeof UserInfoSchema>
+export type CreateUserInfoInput = z.infer<typeof CreateUserInfoSchema>
+export type UpdateUserInfoInput = z.infer<typeof UpdateUserInfoSchema>

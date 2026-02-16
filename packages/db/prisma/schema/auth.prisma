@@ -3,10 +3,13 @@ enum AuthProvider {
   GOOGLE
 }
 
+enum UserType {
+  SELF
+  GUEST
+}
+
 model User {
   id            String         @id @default(cuid())
-  firstName     String
-  lastName      String
   email         String         @unique
   password      String
   createdAt     DateTime       @default(now())
@@ -15,25 +18,26 @@ model User {
   customerId    String?
   avatarUrl     String?
   refreshTokens RefreshToken[]
-  bookings      Booking[]
-  userInfoId    String?
-  userInfo      UserInfo?      @relation(fields: [userInfoId], references: [id])
+  userInfos     UserInfo[]
 
   @@index([createdAt])
   @@index([customerId])
-  @@index([userInfoId])
 }
 
 model UserInfo {
   id          String    @id @default(cuid())
   phoneNumber String?
   dateOfBirth DateTime?
+  firstName   String?
+  lastName    String?
   country     String?
   address     String?
   zipCode     String?
   city        String?
-  users       User[]
   bookings    Booking[]
+  userType    UserType  @default(SELF)
+  user        User?     @relation(fields: [userId], references: [id])
+  userId      String?
 }
 
 model RefreshToken {

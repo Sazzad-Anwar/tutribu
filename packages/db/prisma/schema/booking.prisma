@@ -15,6 +15,7 @@ enum CheckingType {
 }
 
 enum PaymentPlan {
+  LOWEST_DEPOSIT
   THREE_MONTH
   SIX_MONTH
   ONE_TIME
@@ -22,7 +23,6 @@ enum PaymentPlan {
 
 model Booking {
   id                String           @id @default(cuid())
-  userId            String
   specialRequest    String?
   status            BookingStatus    @default(PENDING)
   paymentPlan       PaymentPlan      @default(ONE_TIME)
@@ -32,19 +32,17 @@ model Booking {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   promotionalCode   PromotionalCode? @relation(fields: [promotionalCodeId], references: [id])
-  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   promotionalCodeId String?
   userInfoId        String
   userInfo          UserInfo         @relation(fields: [userInfoId], references: [id])
 
-  @@index([userId])
-  @@index([userId, createdAt])
+  @@index([userInfoId])
+  @@index([userInfoId, createdAt])
   @@index([groupId])
   @@index([status])
   @@index([promotionalCodeId])
   @@index([createdAt])
   @@index([groupId, status])
-  @@index([userInfoId])
 }
 
 model PromotionalCode {

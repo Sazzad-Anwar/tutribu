@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { authClient } from '@/lib/auth-client'
 import { SignInSchema } from '@tutribu/types'
@@ -53,9 +53,11 @@ export default function SignInPage() {
     }
   }
 
-  if (isAuthenticated) {
-    navigate('/')
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/')
+    }
+  }, [isAuthenticated, navigate])
 
   return (
     <section
@@ -70,11 +72,13 @@ export default function SignInPage() {
         <Card className="pt-5 md:pb-32 px-2 md:px-20 w-full md:w-[600px] bg-white md:rounded-[20px]">
           <CardHeader>
             <CardTitle className="mb-5 md:mb-10 flex justify-center items-center">
-              <img
-                src="/images/logo.svg"
-                alt="Logo"
-                className="h-16 w-[182px]"
-              />
+              <Link to="/">
+                <img
+                  src="/images/logo.svg"
+                  alt="Logo"
+                  className="h-16 w-[182px]"
+                />
+              </Link>
             </CardTitle>
             <CardDescription className="font-medium text-2xl text-primary text-center">
               Sign in

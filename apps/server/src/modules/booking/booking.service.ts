@@ -3,6 +3,7 @@ import db from '@tutribu/db'
 import type { BookingSchema, CreateBookingInput } from '@tutribu/types'
 import { status } from 'elysia'
 import type z from 'zod'
+import countries from '@/lib/country.json'
 
 /**
  * Booking service functions
@@ -47,33 +48,44 @@ export async function getValidPromotionalCodeByCode(code: string) {
 
 const createPaymentMethod = async (
   cardDetails: z.infer<typeof BookingSchema.shape.cardDetails>,
-  userId: string,
+  userInfoId: string,
+  countryCode?: string,
 ) => {
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    include: { userInfo: true },
+  const user = await db.userInfo.findUnique({
+    where: { id: userInfoId },
+  })
+
+  if (!user) {
+    throw status(400, { message: 'User not found' })
+  }
+
+  const data = await db.user.findUnique({
+    where: { id: user?.userId! },
+    select: {
+      email: true,
+    },
   })
 
   // Safe navigation in case userInfo is null (though we try to ensure it exists)
   const billingDetails = {
-    name: `${user?.firstName} ${user?.lastName}`,
-    email: user?.email,
-    phone: user?.userInfo?.phoneNumber || undefined,
+    name: `${user.firstName || ''} ${user.lastName || ''}`,
+    email: data?.email,
+    phone: user.phoneNumber || undefined,
     address: {
-      line1: user?.userInfo?.address || undefined,
-      postal_code: user?.userInfo?.zipCode || undefined,
-      city: user?.userInfo?.city || undefined,
-      country: user?.userInfo?.country || undefined,
+      line1: user.address || undefined,
+      postal_code: user.zipCode || undefined,
+      city: user.city || undefined,
+      country: countryCode || undefined,
     },
   }
 
   await stripeClient.paymentMethods.create({
     type: 'card',
     card: {
-      number: cardDetails.number,
-      exp_month: cardDetails.exp_month,
-      exp_year: cardDetails.exp_year,
-      cvc: cardDetails.cvc,
+      number: cardDetails?.number,
+      exp_month: cardDetails?.exp_month,
+      exp_year: cardDetails?.exp_year,
+      cvc: cardDetails?.cvc,
     },
     billing_details: billingDetails,
   })
@@ -91,28 +103,34 @@ const createPaymentMethod = async (
  */
 export async function createBooking(input: CreateBookingInput) {
   // Basic validation
-  if (!input.userId) {
-    throw status(400, { message: 'userId is required' })
+  if (!input.userInfoId) {
+    throw status(400, { message: 'userInfoId is required' })
   }
 
   // Ensure user exists and has userInfo
-  const user = await db.user.findUnique({
-    where: { id: input.userId },
-    include: { userInfo: true },
+  const userInfo = await db.userInfo.findUnique({
+    where: { id: input.userInfoId },
   })
-  if (!user) {
-    throw status(400, { message: 'User not found' })
+  if (!userInfo) {
+    throw status(400, { message: 'User info not found' })
   }
 
-  let userInfoId = user.userInfoId
-  if (!userInfoId) {
-    const newUserInfo = await db.userInfo.create({ data: {} })
-    userInfoId = newUserInfo.id
-    await db.user.update({
-      where: { id: user.id },
-      data: { userInfoId },
-    })
+  // Validate country name against known countries
+  let countryCode: string | undefined
+  if (userInfo.country) {
+    const matched = countries.find(
+      (c) => c.name.toLowerCase() === userInfo.country!.toLowerCase(),
+    )
+    if (!matched) {
+      throw status(400, {
+        message: `Country name '${userInfo.country}' is not valid`,
+      })
+    }
+    countryCode = matched.code
   }
+
+  const userInfoId = userInfo.id
+
   if (!input.groupId) {
     throw status(400, { message: 'groupId is required' })
   }
@@ -123,50 +141,24 @@ export async function createBooking(input: CreateBookingInput) {
     throw status(400, { message: 'totalAmount must be a number' })
   }
 
-  // If promotional code provided, validate it and apply its discount
-  let promotionalCodeId: string | null = null
-  if (input.promotionalCode) {
-    const promo = await getValidPromotionalCodeByCode(input.promotionalCode)
-    if (!promo) {
-      throw status(400, { message: 'Invalid or expired promotional code' })
-    }
-    promotionalCodeId = promo.id
-  }
-
-  // Apply promotional discount (interpreted as absolute discount)
-  const discount = promotionalCodeId
-    ? ((
-        await db.promotionalCode.findUnique({
-          where: { id: promotionalCodeId },
-        })
-      )?.discount ?? 0)
-    : 0
-
-  const finalTotal = Math.max(0, input.totalAmount - discount)
-
   // Create booking in a transaction
   const created = await db.$transaction(async (tx) => {
     const booking = await tx.booking.create({
       data: {
-        userId: input.userId,
         userInfoId: userInfoId!,
         groupId: input.groupId,
-        totalAmount: finalTotal,
+        totalAmount: input.totalAmount,
         specialRequest: input.specialRequest ?? null,
         paymentPlan: input.paymentPlan ?? 'ONE_TIME',
         checkingType: input.checkingType ?? 'SELF',
         status: input.status ?? 'PENDING',
-        promotionalCodeId,
-      },
-      include: {
-        promotionalCode: true,
       },
     })
 
     return booking
   })
 
-  await createPaymentMethod(input.cardDetails, input.userId)
+  await createPaymentMethod(input.cardDetails, input.userInfoId, countryCode)
 
   return created
 }
@@ -184,6 +176,7 @@ export async function getBookingById(bookingId: string, ownerId?: string) {
     where: { id: bookingId },
     include: {
       promotionalCode: true,
+      userInfo: true,
     },
   })
 
@@ -191,7 +184,7 @@ export async function getBookingById(bookingId: string, ownerId?: string) {
     throw status(404, { message: 'Booking not found' })
   }
 
-  if (ownerId && booking.userId !== ownerId) {
+  if (ownerId && booking.userInfo.userId !== ownerId) {
     throw status(403, { message: 'Forbidden' })
   }
 
@@ -207,7 +200,11 @@ export async function listBookingsForUser(userId: string) {
   }
 
   const bookings = await db.booking.findMany({
-    where: { userId },
+    where: {
+      userInfo: {
+        userId,
+      },
+    },
     include: {
       promotionalCode: true,
     },

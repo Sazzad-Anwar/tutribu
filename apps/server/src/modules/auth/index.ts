@@ -214,18 +214,6 @@ export const AuthModule: any = new Elysia({ prefix: '/api/auth' })
       return { accessToken: newAccessToken }
     },
     {
-      cookie: z.object({
-        refreshToken: z
-          .object({
-            value: z.string().optional(),
-          })
-          .optional(),
-        accessToken: z
-          .object({
-            value: z.string().optional(),
-          })
-          .optional(),
-      }),
       response: {
         200: z.object({
           accessToken: z.jwt(),
