@@ -152,7 +152,7 @@ export default function Header() {
                           <DropdownMenuGroup>
                             <DropdownMenuItem
                               className="pt-2 pb-2 cursor-pointer hover:bg-brand"
-                              onClick={() => navigate('/')}
+                              onClick={() => navigate('/mytrips')}
                             >
                               <img
                                 src="/images/map.svg"

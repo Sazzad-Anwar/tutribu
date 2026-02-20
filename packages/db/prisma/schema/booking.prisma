@@ -9,6 +9,13 @@ enum BookingStatus {
   COMPLETED
 }
 
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
 enum CheckingType {
   SELF
   GUEST
@@ -22,27 +29,32 @@ enum PaymentPlan {
 }
 
 model Booking {
-  id                String           @id @default(cuid())
-  specialRequest    String?
-  status            BookingStatus    @default(PENDING)
-  paymentPlan       PaymentPlan      @default(ONE_TIME)
-  groupId           String
-  totalAmount       Float
-  checkingType      CheckingType     @default(SELF)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  promotionalCode   PromotionalCode? @relation(fields: [promotionalCodeId], references: [id])
-  promotionalCodeId String?
-  userInfoId        String
-  userInfo          UserInfo         @relation(fields: [userInfoId], references: [id])
+  id                    String           @id @default(cuid())
+  specialRequest        String?
+  bookingStatus         BookingStatus    @default(PENDING)
+  paymentStatus         PaymentStatus    @default(PENDING)
+  paymentPlan           PaymentPlan      @default(ONE_TIME)
+  groupId               String
+  totalAmount           Float
+  amountPaid            Float            @default(0)
+  stripePaymentIntentId String?
+  stripeSubscriptionId  String?
+  checkingType          CheckingType     @default(SELF)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  promotionalCode       PromotionalCode? @relation(fields: [promotionalCodeId], references: [id])
+  promotionalCodeId     String?
+  userInfoId            String
+  userInfo              UserInfo         @relation(fields: [userInfoId], references: [id])
 
   @@index([userInfoId])
   @@index([userInfoId, createdAt])
   @@index([groupId])
-  @@index([status])
+  @@index([bookingStatus])
+  @@index([paymentStatus])
   @@index([promotionalCodeId])
   @@index([createdAt])
-  @@index([groupId, status])
+  @@index([groupId, bookingStatus])
 }
 
 model PromotionalCode {

@@ -206,7 +206,7 @@ export const BookingModule: any = new Elysia({ prefix: '/api/booking' })
 
       const updated = await updateBookingStatus(
         params.id as string,
-        (body as any).status,
+        body as any,
       )
       set.headers['content-type'] = 'application/json'
       return updated

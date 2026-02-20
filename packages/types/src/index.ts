@@ -62,22 +62,18 @@ export const BookingSchema = z.object({
   userInfoId: z.cuid(),
   specialRequest: z.string().optional(),
   promotionalCode: z.string().optional(),
-  status: z
+  bookingStatus: z
     .enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'])
+    .default('PENDING'),
+  paymentStatus: z
+    .enum(['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED'])
     .default('PENDING'),
   paymentPlan: z
     .enum(['THREE_MONTH', 'SIX_MONTH', 'ONE_TIME', 'LOWEST_DEPOSIT'])
     .default('ONE_TIME'),
   groupId: z.string(),
   checkingType: z.enum(['SELF', 'GUEST']).default('SELF'),
-  cardDetails: z
-    .object({
-      number: z.string().min(12).max(19),
-      exp_month: z.number().min(1).max(12),
-      exp_year: z.number().min(new Date().getFullYear()),
-      cvc: z.string().min(3).max(4),
-    })
-    .optional(),
+  paymentMethodId: z.string().min(1),
   // extraFeatures: z.array(ExtraFeatureSchema).optional(),
 })
 
@@ -94,7 +90,12 @@ export const ApplyPromoSchema = z.object({
 })
 
 export const UpdateStatusSchema = z.object({
-  status: z.enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED']),
+  bookingStatus: z
+    .enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'])
+    .optional(),
+  paymentStatus: z
+    .enum(['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED'])
+    .optional(),
 })
 
 export type SignUpInput = z.infer<typeof SignUpSchema>

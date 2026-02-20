@@ -104,9 +104,9 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        <div className="mt-20 flex items-center justify-between">
+        <div className="mt-20 flex flex-col gap-6.5 md:flex-row items-center justify-between">
           <div>
-            <p className="text-base mb-2">We accept</p>
+            <p className="text-base text-center md:text-left mb-2">We accept</p>
             <div className="gap-2 flex items-center">
               <img
                 src="/images/visa-icon.svg"
@@ -160,7 +160,7 @@ export default function Footer() {
         </div>
       </section>
       <Separator className="mt-6 mb-2.5 bg-[#E0E0E0] w-full" />
-      <p className=" text-sm lg:text-lg leading-[100%] text-[#69666C] text-center pb-4">
+      <p className="text-center px-16 pb-5 md:px-0 text-sm lg:text-lg leading-[25px] md:leading-[100%] text-[#69666C] md:pb-4">
         © 2025 Tu Tribu Viajera. All rights reserved. | Privacy Policy | Terms &
         Conditions
       </p>

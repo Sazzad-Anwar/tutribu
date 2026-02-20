@@ -1,8 +1,7 @@
 import { stripeClient } from '@/lib/stripe'
 import db from '@tutribu/db'
-import type { BookingSchema, CreateBookingInput } from '@tutribu/types'
+import type { CreateBookingInput } from '@tutribu/types'
 import { status } from 'elysia'
-import type z from 'zod'
 import countries from '@/lib/country.json'
 
 /**
@@ -46,49 +45,223 @@ export async function getValidPromotionalCodeByCode(code: string) {
   return promo
 }
 
-const createPaymentMethod = async (
-  cardDetails: z.infer<typeof BookingSchema.shape.cardDetails>,
-  userInfoId: string,
-  countryCode?: string,
+/**
+ * Calculate the initial charge amount based on the payment plan.
+ * - ONE_TIME: full totalAmount
+ * - LOWEST_DEPOSIT: $300 flat (or totalAmount if less than $300)
+ * - THREE_MONTH: totalAmount / 3
+ * - SIX_MONTH: totalAmount / 6
+ */
+function calculateChargeAmount(
+  totalAmount: number,
+  paymentPlan: string,
+): number {
+  switch (paymentPlan) {
+    case 'LOWEST_DEPOSIT':
+      return Math.min(totalAmount, 300)
+    case 'THREE_MONTH':
+      return Math.ceil((totalAmount / 3) * 100) / 100 // Charge 1/3
+    case 'SIX_MONTH':
+      return Math.ceil((totalAmount / 6) * 100) / 100 // Charge 1/6
+    case 'ONE_TIME':
+    default:
+      return totalAmount
+  }
+}
+
+/**
+ * Process a payment for a booking:
+ * 1. Get or create a Stripe Customer (saved to User.customerId)
+ * 2. Attach the PaymentMethod (created on frontend via Stripe.js) to customer
+ * 3. Create and confirm a PaymentIntent for the calculated charge amount
+ *
+ * Returns { paymentIntentId, amountCharged } for storage on the booking.
+ */
+const getOrCreateInstallmentPrice = async (
+  amount: number,
+  interval: 'day' | 'month',
 ) => {
-  const user = await db.userInfo.findUnique({
-    where: { id: userInfoId },
+  const amountInCents = Math.round(amount * 100)
+
+  // 1. Get or create a generic 'Trip Installment' product
+  const products = await stripeClient.products.list({ limit: 100 })
+  let product = products.data.find((p) => p.name === 'Trip Installment')
+
+  if (!product) {
+    product = await stripeClient.products.create({
+      name: 'Trip Installment',
+      description: 'Recurring payment for trip installments',
+    })
+  }
+
+  // 2. Create a price for this specific amount and interval
+  // Note: For high-volume, we'd cache these, but for now we create as needed
+  const price = await stripeClient.prices.create({
+    unit_amount: amountInCents,
+    currency: 'usd',
+    recurring: { interval },
+    product: product.id,
+    metadata: { generated_for_booking: 'true' },
   })
 
-  if (!user) {
+  return price.id
+}
+
+const processSubscriptionPayment = async (
+  paymentMethodId: string,
+  userInfoId: string,
+  totalAmount: number,
+  paymentPlan: 'THREE_MONTH' | 'SIX_MONTH',
+  countryCode?: string,
+): Promise<{ subscriptionId: string; amountCharged: number }> => {
+  const userInfo = await db.userInfo.findUnique({
+    where: { id: userInfoId },
+    include: { user: true },
+  })
+
+  if (!userInfo || !userInfo.user) {
     throw status(400, { message: 'User not found' })
   }
 
-  const data = await db.user.findUnique({
-    where: { id: user?.userId! },
-    select: {
-      email: true,
-    },
-  })
+  const user = userInfo.user
+  let stripeCustomerId = user.customerId
 
-  // Safe navigation in case userInfo is null (though we try to ensure it exists)
-  const billingDetails = {
-    name: `${user.firstName || ''} ${user.lastName || ''}`,
-    email: data?.email,
-    phone: user.phoneNumber || undefined,
-    address: {
-      line1: user.address || undefined,
-      postal_code: user.zipCode || undefined,
-      city: user.city || undefined,
-      country: countryCode || undefined,
-    },
+  if (!stripeCustomerId) {
+    const customer = await stripeClient.customers.create({
+      email: user.email,
+      name: `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim(),
+      phone: userInfo.phoneNumber || undefined,
+      address: {
+        line1: userInfo.address || undefined,
+        postal_code: userInfo.zipCode || undefined,
+        city: userInfo.city || undefined,
+        country: countryCode || undefined,
+      },
+    })
+    stripeCustomerId = customer.id
+    await db.user.update({
+      where: { id: user.id },
+      data: { customerId: stripeCustomerId },
+    })
   }
 
-  await stripeClient.paymentMethods.create({
-    type: 'card',
-    card: {
-      number: cardDetails?.number,
-      exp_month: cardDetails?.exp_month,
-      exp_year: cardDetails?.exp_year,
-      cvc: cardDetails?.cvc,
-    },
-    billing_details: billingDetails,
+  await stripeClient.paymentMethods.attach(paymentMethodId, {
+    customer: stripeCustomerId,
   })
+
+  await stripeClient.customers.update(stripeCustomerId, {
+    invoice_settings: { default_payment_method: paymentMethodId },
+  })
+
+  const iterations = paymentPlan === 'THREE_MONTH' ? 3 : 6
+  const installmentAmount = totalAmount / iterations
+  const priceId = await getOrCreateInstallmentPrice(installmentAmount, 'month')
+
+  // Calculate cancel_at (iterations - 1 full periods + 1 day buffer)
+  // For monthly, if we want 3 charges: T=0, T=30d, T=60d. Cancel at T=61d.
+  // Using 30 days as a Rough month for cancellation logic (Stripe handles exact dates)
+  const cancelAt =
+    Math.floor(Date.now() / 1000) +
+    (iterations - 1) * 30 * 24 * 3600 +
+    24 * 3600
+
+  const subscription = await stripeClient.subscriptions.create({
+    customer: stripeCustomerId,
+    items: [{ price: priceId }],
+    default_payment_method: paymentMethodId,
+    payment_behavior: 'allow_incomplete',
+    cancel_at: cancelAt,
+    metadata: { paymentPlan, totalAmount: String(totalAmount) },
+    expand: ['latest_invoice.payment_intent'],
+  })
+
+  const invoice = subscription.latest_invoice as any
+  const paymentIntent = invoice?.payment_intent
+
+  if (paymentIntent && paymentIntent.status !== 'succeeded') {
+    // If the first payment fails or requires action, we should not consider it paid
+    throw status(400, {
+      message: `First installment payment ${paymentIntent.status}. Please check your card or handle authentication.`,
+    })
+  }
+
+  return {
+    subscriptionId: subscription.id,
+    amountCharged: installmentAmount,
+  }
+}
+
+const processPayment = async (
+  paymentMethodId: string,
+  userInfoId: string,
+  totalAmount: number,
+  paymentPlan: string,
+  countryCode?: string,
+): Promise<{ paymentIntentId: string; amountCharged: number }> => {
+  // 1. Look up userInfo and associated User
+  const userInfo = await db.userInfo.findUnique({
+    where: { id: userInfoId },
+    include: { user: true },
+  })
+
+  if (!userInfo || !userInfo.user) {
+    throw status(400, { message: 'User not found' })
+  }
+
+  const user = userInfo.user
+
+  // 2. Get or create Stripe Customer
+  let stripeCustomerId = user.customerId
+
+  if (!stripeCustomerId) {
+    const customer = await stripeClient.customers.create({
+      email: user.email,
+      name: `${userInfo.firstName || ''} ${userInfo.lastName || ''}`.trim(),
+      phone: userInfo.phoneNumber || undefined,
+      address: {
+        line1: userInfo.address || undefined,
+        postal_code: userInfo.zipCode || undefined,
+        city: userInfo.city || undefined,
+        country: countryCode || undefined,
+      },
+    })
+    stripeCustomerId = customer.id
+
+    // Save the Stripe Customer ID on the User
+    await db.user.update({
+      where: { id: user.id },
+      data: { customerId: stripeCustomerId },
+    })
+  }
+
+  // 3. Attach the PaymentMethod (created on frontend) to the customer
+  await stripeClient.paymentMethods.attach(paymentMethodId, {
+    customer: stripeCustomerId,
+  })
+
+  // 4. Calculate charge amount and create PaymentIntent
+  const chargeAmount = calculateChargeAmount(totalAmount, paymentPlan)
+  const amountInCents = Math.round(chargeAmount * 100)
+
+  const paymentIntent = await stripeClient.paymentIntents.create({
+    amount: amountInCents,
+    currency: 'usd',
+    customer: stripeCustomerId,
+    payment_method: paymentMethodId,
+    off_session: true,
+    confirm: true,
+    description: `Booking payment – ${paymentPlan} plan`,
+    metadata: {
+      paymentPlan,
+      totalAmount: String(totalAmount),
+      chargeAmount: String(chargeAmount),
+    },
+  })
+
+  return {
+    paymentIntentId: paymentIntent.id,
+    amountCharged: chargeAmount,
+  }
 }
 
 /**
@@ -141,26 +314,62 @@ export async function createBooking(input: CreateBookingInput) {
     throw status(400, { message: 'totalAmount must be a number' })
   }
 
-  // Create booking in a transaction
-  const created = await db.$transaction(async (tx) => {
-    const booking = await tx.booking.create({
-      data: {
-        userInfoId: userInfoId!,
-        groupId: input.groupId,
-        totalAmount: input.totalAmount,
-        specialRequest: input.specialRequest ?? null,
-        paymentPlan: input.paymentPlan ?? 'ONE_TIME',
-        checkingType: input.checkingType ?? 'SELF',
-        status: input.status ?? 'PENDING',
-      },
-    })
+  // Create the booking
+  const paymentPlan = input.paymentPlan ?? 'ONE_TIME'
 
-    return booking
+  const booking = await db.booking.create({
+    data: {
+      userInfoId: userInfoId!,
+      groupId: input.groupId,
+      totalAmount: input.totalAmount,
+      specialRequest: input.specialRequest ?? null,
+      paymentPlan,
+      checkingType: input.checkingType ?? 'SELF',
+      bookingStatus: input.bookingStatus ?? 'PENDING',
+      paymentStatus: 'PENDING',
+    },
   })
 
-  await createPaymentMethod(input.cardDetails, input.userInfoId, countryCode)
+  // Process payment via Stripe
+  let paymentDetails: {
+    paymentIntentId?: string
+    subscriptionId?: string
+    amountCharged: number
+  }
 
-  return created
+  if (paymentPlan === 'THREE_MONTH' || paymentPlan === 'SIX_MONTH') {
+    const { subscriptionId, amountCharged } = await processSubscriptionPayment(
+      input.paymentMethodId,
+      input.userInfoId,
+      input.totalAmount,
+      paymentPlan as 'THREE_MONTH' | 'SIX_MONTH',
+      countryCode,
+    )
+    paymentDetails = { subscriptionId, amountCharged }
+  } else {
+    const { paymentIntentId, amountCharged } = await processPayment(
+      input.paymentMethodId,
+      input.userInfoId,
+      input.totalAmount,
+      paymentPlan,
+      countryCode,
+    )
+    paymentDetails = { paymentIntentId, amountCharged }
+  }
+
+  // Update booking with payment details
+  const updated = await db.booking.update({
+    where: { id: booking.id },
+    data: {
+      stripePaymentIntentId: paymentDetails.paymentIntentId,
+      stripeSubscriptionId: paymentDetails.subscriptionId,
+      amountPaid: paymentDetails.amountCharged,
+      bookingStatus: 'CONFIRMED',
+      paymentStatus: paymentDetails.subscriptionId ? 'COMPLETED' : 'COMPLETED', // Both should be COMPLETED if we reach here since we throw on failure now
+    },
+  })
+
+  return updated
 }
 
 /**
@@ -267,20 +476,18 @@ export async function applyPromotionalCodeToBooking(
  */
 export async function updateBookingStatus(
   bookingId: string,
-  statusValue: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED',
+  updates: {
+    bookingStatus?: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED'
+    paymentStatus?: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED'
+  },
 ) {
   if (!bookingId) {
     throw status(400, { message: 'bookingId is required' })
   }
 
-  const booking = await db.booking.findUnique({ where: { id: bookingId } })
-  if (!booking) {
-    throw status(404, { message: 'Booking not found' })
-  }
-
   const updated = await db.booking.update({
     where: { id: bookingId },
-    data: { status: statusValue },
+    data: updates,
     include: { promotionalCode: true },
   })
 
