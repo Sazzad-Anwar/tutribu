@@ -42,6 +42,9 @@ function CheckoutInner() {
   const query = qs.parse(location.search, { ignoreQueryPrefix: true })
   const [timeLeft, setTimeLeft] = useState(15 * 60) // 15 minutes in seconds
   const [isMounted, setIsMounted] = useState(false)
+  const [savedCards, setSavedCards] = useState<any[]>([])
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<string>('new')
   const [formData, setFormData] = useState({
     isOwnRoom: false,
     joinWhatsAppGroup: false,
@@ -65,6 +68,24 @@ function CheckoutInner() {
 
     return () => clearInterval(timer)
   }, [timeLeft])
+
+  useEffect(() => {
+    const fetchSavedCards = async () => {
+      try {
+        const cards = await bookingClient.getSavedPaymentMethods()
+        setSavedCards(cards)
+        if (cards.length > 0) {
+          setSelectedPaymentMethod(cards[0].id)
+        }
+      } catch (error) {
+        console.error('Failed to fetch saved cards', error)
+      }
+    }
+
+    if (user) {
+      fetchSavedCards()
+    }
+  }, [user])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -159,18 +180,22 @@ function CheckoutInner() {
 
   const hanldeSubmit = async () => {
     setIsLoading(true)
-    if (!stripe || !elements) {
-      toast.error('Payment system is loading, please wait...')
-      return
-    }
+    let paymentMethodIdToUse = ''
 
-    const cardNumberElement = elements.getElement(CardNumberElement)
-    if (!cardNumberElement) {
-      toast.error('Card details are required')
-      return
-    }
+    if (selectedPaymentMethod === 'new') {
+      if (!stripe || !elements) {
+        toast.error('Payment system is loading, please wait...')
+        setIsLoading(false)
+        return
+      }
 
-    try {
+      const cardNumberElement = elements.getElement(CardNumberElement)
+      if (!cardNumberElement) {
+        toast.error('Card details are required')
+        setIsLoading(false)
+        return
+      }
+
       // Tokenize card details via Stripe.js (PCI-compliant)
       const { error: stripeError, paymentMethod } =
         await stripe.createPaymentMethod({
@@ -183,9 +208,15 @@ function CheckoutInner() {
 
       if (stripeError || !paymentMethod) {
         toast.error(stripeError?.message || 'Failed to process card')
+        setIsLoading(false)
         return
       }
+      paymentMethodIdToUse = paymentMethod.id
+    } else {
+      paymentMethodIdToUse = selectedPaymentMethod
+    }
 
+    try {
       const data: CreateBookingInput = {
         userInfoId: user!.id,
         specialRequest: query.specialRequest as string,
@@ -197,12 +228,13 @@ function CheckoutInner() {
         groupId: 'safsdfsdd',
         checkingType:
           query.bookingFor as string as CreateBookingInput['checkingType'],
-        paymentMethodId: paymentMethod.id,
+        paymentMethodId: paymentMethodIdToUse,
       }
       await bookingClient.create(data)
       toast.success('Booking created successfully', {
         description: 'You will be notified when your booking is confirmed',
       })
+      navigate('/my-bookings')
       setIsLoading(false)
     } catch (error) {
       console.log(error)
@@ -379,116 +411,189 @@ function CheckoutInner() {
 
               <div className="mt-15">
                 <h1 className="text-[32px] xl:text-[54px] mb-6.5 xl:mb-10 font-bold font-tinos">
-                  Enter card details
+                  Payment Method
                 </h1>
-                <div className="space-y-2.5">
-                  <p className="text-base xl:text-xl">Card Number</p>
-                  <div className="h-15 flex items-center w-full border border-[#0000001A] rounded-[10px] px-4">
-                    <CardNumberElement
-                      options={{
-                        style: {
-                          base: {
-                            fontSize: '16px',
-                            fontFamily: 'ui-monospace, monospace',
-                            color: '#000',
-                            '::placeholder': { color: '#aaa' },
-                          },
-                        },
-                      }}
-                      className="w-full"
-                    />
+
+                {savedCards.length > 0 && (
+                  <div className="mb-10 space-y-4">
+                    <p className="text-xl font-medium mb-4">Saved Cards</p>
+                    {savedCards.map((card) => (
+                      <label
+                        key={card.id}
+                        className={`border rounded-[10px] p-5 flex items-center gap-5 cursor-pointer ${
+                          selectedPaymentMethod === card.id
+                            ? 'border-brand bg-brand/5'
+                            : 'border-[#0000001A]'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value={card.id}
+                          checked={selectedPaymentMethod === card.id}
+                          onChange={(e) =>
+                            setSelectedPaymentMethod(e.target.value)
+                          }
+                          className="size-5 accent-brand cursor-pointer"
+                        />
+                        <div className="flex items-center gap-4">
+                          <img
+                            src={
+                              card.brand === 'visa'
+                                ? '/images/visa.png'
+                                : card.brand === 'mastercard'
+                                  ? '/images/master-card.png'
+                                  : '/images/paypal.png'
+                            }
+                            alt={card.brand}
+                            className="h-8 max-w-[50px] object-contain"
+                          />
+                          <p className="text-lg xl:text-xl font-medium">
+                            **** **** **** {card.last4}
+                          </p>
+                          <p className="text-base text-gray-500">
+                            Expires {card.exp_month}/{card.exp_year}
+                          </p>
+                        </div>
+                      </label>
+                    ))}
+
+                    <label
+                      className={`border rounded-[10px] p-5 flex items-center gap-5 cursor-pointer ${
+                        selectedPaymentMethod === 'new'
+                          ? 'border-brand bg-brand/5'
+                          : 'border-[#0000001A]'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="new"
+                        checked={selectedPaymentMethod === 'new'}
+                        onChange={(e) =>
+                          setSelectedPaymentMethod(e.target.value)
+                        }
+                        className="size-5 accent-brand cursor-pointer"
+                      />
+                      <span className="text-lg xl:text-xl font-medium">
+                        Use a new card
+                      </span>
+                    </label>
                   </div>
-                  <div className="flex gap-5">
-                    <img
-                      src="/images/visa.png"
-                      alt="visa"
-                      className="h-10 w-15"
-                    />
-                    <img
-                      src="/images/master-card.png"
-                      alt="mastercard"
-                      className="h-10 w-15"
-                    />
-                    <img
-                      src="/images/paypal.png"
-                      alt="american-express"
-                      className="h-10 w-15"
-                    />
-                  </div>
-                  <p className="text-base xl:text-lg">
-                    We accept debit and credit cards types.
-                  </p>
-                </div>
-                <div className="mt-8">
-                  <p className="text-base xl:text-xl">Expiry Date</p>
-                  <p className="text-"></p>
-                  <div className="h-15 flex items-center w-50 border border-[#0000001A] rounded-[10px] px-4 mt-3.5">
-                    <CardExpiryElement
-                      options={{
-                        style: {
-                          base: {
-                            fontSize: '16px',
-                            color: '#000',
-                            '::placeholder': { color: '#aaa' },
-                          },
-                        },
-                      }}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-                <div className="mt-13 space-y-2.5">
-                  <label
-                    htmlFor="card-name"
-                    className="text-base xl:text-xl block"
-                  >
-                    Name on card
-                  </label>
-                  <Input
-                    value={formData.nameOnCard}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(/[^A-Za-z ]/g, '')
-                      setFormData((prev) => ({
-                        ...prev,
-                        nameOnCard: val,
-                      }))
-                    }}
-                    id="card-name"
-                    className="h-15 py-0 w-full uppercase border-[#0000001A] rounded-[10px]"
-                  />
-                </div>
-                <div className="mt-5 space-y-2.5">
-                  <label
-                    htmlFor="cvv"
-                    className="text-base xl:text-xl font-normal"
-                  >
-                    Security Code
-                  </label>
-                  <p className="text-base xl:text-xl text-[#00000080]">
-                    The last 3 digits on the back of the card.
-                  </p>
-                  <div className="flex items-center gap-7.5">
-                    <div className="h-15 flex items-center w-[228px] border border-[#0000001A] rounded-[10px] px-4">
-                      <CardCvcElement
-                        options={{
-                          style: {
-                            base: {
-                              fontSize: '16px',
-                              color: '#000',
-                              '::placeholder': { color: '#aaa' },
+                )}
+
+                {selectedPaymentMethod === 'new' && (
+                  <>
+                    <div className="space-y-2.5">
+                      <p className="text-base xl:text-xl">Card Number</p>
+                      <div className="h-15 flex items-center w-full border border-[#0000001A] rounded-[10px] px-4 bg-white">
+                        <CardNumberElement
+                          options={{
+                            style: {
+                              base: {
+                                fontSize: '16px',
+                                fontFamily: 'ui-monospace, monospace',
+                                color: '#000',
+                                '::placeholder': { color: '#aaa' },
+                              },
                             },
-                          },
+                          }}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="flex gap-5">
+                        <img
+                          src="/images/visa.png"
+                          alt="visa"
+                          className="h-10 w-15"
+                        />
+                        <img
+                          src="/images/master-card.png"
+                          alt="mastercard"
+                          className="h-10 w-15"
+                        />
+                        <img
+                          src="/images/paypal.png"
+                          alt="american-express"
+                          className="h-10 w-15"
+                        />
+                      </div>
+                      <p className="text-base xl:text-lg">
+                        We accept debit and credit cards types.
+                      </p>
+                    </div>
+                    <div className="mt-8">
+                      <p className="text-base xl:text-xl">Expiry Date</p>
+                      <p className="text-"></p>
+                      <div className="h-15 flex items-center w-50 border border-[#0000001A] rounded-[10px] px-4 mt-3.5 bg-white">
+                        <CardExpiryElement
+                          options={{
+                            style: {
+                              base: {
+                                fontSize: '16px',
+                                color: '#000',
+                                '::placeholder': { color: '#aaa' },
+                              },
+                            },
+                          }}
+                          className="w-full"
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-13 space-y-2.5">
+                      <label
+                        htmlFor="card-name"
+                        className="text-base xl:text-xl block"
+                      >
+                        Name on card
+                      </label>
+                      <Input
+                        value={formData.nameOnCard}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^A-Za-z ]/g, '')
+                          setFormData((prev) => ({
+                            ...prev,
+                            nameOnCard: val,
+                          }))
                         }}
-                        className="w-full"
+                        id="card-name"
+                        className="h-15 py-0 w-full uppercase border-[#0000001A] rounded-[10px] bg-white"
                       />
                     </div>
-                    <img
-                      src="/images/cvv.png"
-                      alt="cvv"
-                      className="w-15 h-10"
-                    />
-                  </div>
-                </div>
+                    <div className="mt-5 space-y-2.5">
+                      <label
+                        htmlFor="cvv"
+                        className="text-base xl:text-xl font-normal"
+                      >
+                        Security Code
+                      </label>
+                      <p className="text-base xl:text-xl text-[#00000080]">
+                        The last 3 digits on the back of the card.
+                      </p>
+                      <div className="flex items-center gap-7.5">
+                        <div className="h-15 flex items-center w-[228px] border border-[#0000001A] rounded-[10px] px-4 bg-white">
+                          <CardCvcElement
+                            options={{
+                              style: {
+                                base: {
+                                  fontSize: '16px',
+                                  color: '#000',
+                                  '::placeholder': { color: '#aaa' },
+                                },
+                              },
+                            }}
+                            className="w-full"
+                          />
+                        </div>
+                        <img
+                          src="/images/cvv.png"
+                          alt="cvv"
+                          className="w-15 h-10"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <Button
                   disabled={isLoading}

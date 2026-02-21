@@ -78,4 +78,19 @@ export const bookingClient = {
       throw error
     }
   },
+
+  getSavedPaymentMethods: async () => {
+    try {
+      const response = await axios.get(`${API_URL}/payment-methods`)
+      return response.data
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message ||
+            'Failed to fetch saved payment methods',
+        )
+      }
+      throw error
+    }
+  },
 }

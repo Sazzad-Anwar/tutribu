@@ -13,17 +13,35 @@ import { Input } from './ui/input'
 import { DatePicker } from './ui/date-picker'
 import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
-import { CircleAlert, Eye, EyeOff, LoaderCircle, Star } from 'lucide-react'
+import {
+  CircleAlert,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  Star,
+  Check,
+  ChevronsUpDown,
+} from 'lucide-react'
 import { Label } from './ui/label'
 import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 import { Textarea } from './ui/textarea'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
-import { axios } from '../lib/utils'
+import { axios, cn } from '../lib/utils'
 import { authClient } from '../lib/auth-client'
 import { useNavigate } from 'react-router'
 import qs from 'qs'
 import PriceSummary from './price-summary'
+import countries from '../lib/country.json'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from './ui/command'
 
 export default function UserBookingSignup() {
   const navigate = useNavigate()
@@ -35,6 +53,7 @@ export default function UserBookingSignup() {
   const [bookingFor, setBookingFor] = useState<'SELF' | 'GUEST'>('SELF')
   const resolverSchema = isAuthenticated ? BookingSignUpSchema : SignUpSchema
   const [showPassword, setShowPassword] = useState(false)
+  const [openCountry, setOpenCountry] = useState(false)
   const form = useForm<SignUpInput | BookingSignUpInput>({
     resolver: zodResolver(resolverSchema),
     defaultValues: {
@@ -211,16 +230,71 @@ export default function UserBookingSignup() {
                   >
                     Country
                   </FieldLabel>
-                  <Input
-                    id="country"
-                    type="text"
-                    aria-invalid={fieldState.invalid}
-                    placeholder="Country"
-                    autoComplete="off"
-                    className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-4 lg:py-3 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg"
-                    {...field}
-                    value={field.value || ''}
-                  />
+                  <Popover
+                    open={openCountry}
+                    onOpenChange={setOpenCountry}
+                  >
+                    <PopoverTrigger
+                      render={
+                        <Button
+                          id="country"
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openCountry}
+                          aria-invalid={fieldState.invalid}
+                          className={cn(
+                            'justify-between font-normal border focus-visible:ring-0 focus:ring-0 focus:ring-offset-0 focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-4 lg:py-3 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg w-full aria-invalid:border-red-500 aria-invalid:ring-red-500',
+                            !field.value &&
+                              'text-black/30 lg:text-sm xl:text-lg',
+                          )}
+                        />
+                      }
+                    >
+                      {field.value
+                        ? countries.find(
+                            (country) => country.name === field.value,
+                          )?.name
+                        : 'Select Country'}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-(--anchor-width) p-0"
+                      align="start"
+                    >
+                      <Command>
+                        <CommandInput placeholder="Search country..." />
+                        <CommandList>
+                          <CommandEmpty>No country found.</CommandEmpty>
+                          <CommandGroup>
+                            {countries.map((country) => (
+                              <CommandItem
+                                key={country.code}
+                                value={country.name}
+                                onSelect={(currentValue) => {
+                                  field.onChange(
+                                    currentValue === field.value
+                                      ? ''
+                                      : currentValue,
+                                  )
+                                  setOpenCountry(false)
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    'mr-2 h-4 w-4',
+                                    field.value === country.name
+                                      ? 'opacity-100'
+                                      : 'opacity-0',
+                                  )}
+                                />
+                                {country.name}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}

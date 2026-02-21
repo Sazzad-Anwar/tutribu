@@ -9,6 +9,7 @@ import {
   getBookingById,
   applyPromotionalCodeToBooking,
   updateBookingStatus,
+  getSavedPaymentMethods,
 } from './booking.service'
 import {
   ApplyPromoSchema,
@@ -96,6 +97,40 @@ export const BookingModule: any = new Elysia({ prefix: '/api/booking' })
       detail: {
         summary: 'List Bookings',
         description: 'List bookings for the authenticated user',
+        tags: ['Booking'],
+      },
+    },
+  )
+  // Get saved payment methods for current user
+  .get(
+    '/payment-methods',
+    async ({
+      jwt,
+      cookie: { accessToken },
+      headers: { authorization },
+      status,
+    }) => {
+      const token = (authorization ?? accessToken?.value) as string | undefined
+      const jwtUser = await jwt.verify(token)
+      if (!jwtUser) {
+        return status(401, { message: 'Unauthorized' })
+      }
+
+      const paymentMethods = await getSavedPaymentMethods(
+        jwtUser.userId as string,
+      )
+      return paymentMethods
+    },
+    {
+      response: {
+        200: z.array(z.any()),
+        401: z.object({ message: z.string() }),
+        404: z.object({ message: z.string() }),
+      },
+      detail: {
+        summary: 'Get Saved Payment Methods',
+        description:
+          'Get saved Stripe payment methods for the authenticated user',
         tags: ['Booking'],
       },
     },

@@ -526,3 +526,30 @@ export async function removePromotionalCodeFromBooking(
 
   return updated
 }
+
+/**
+ * Fetch saved payment methods for a user
+ */
+export async function getSavedPaymentMethods(userId: string) {
+  const user = await db.user.findUnique({ where: { id: userId } })
+  if (!user) {
+    throw status(404, { message: 'User not found' })
+  }
+
+  if (!user.customerId) {
+    return []
+  }
+
+  const paymentMethods = await stripeClient.paymentMethods.list({
+    customer: user.customerId,
+    type: 'card',
+  })
+
+  return paymentMethods.data.map((pm) => ({
+    id: pm.id,
+    brand: pm.card?.brand,
+    last4: pm.card?.last4,
+    exp_month: pm.card?.exp_month,
+    exp_year: pm.card?.exp_year,
+  }))
+}
