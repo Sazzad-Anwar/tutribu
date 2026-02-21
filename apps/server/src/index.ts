@@ -2,6 +2,7 @@ import { cors } from '@elysiajs/cors'
 import openapi from '@elysiajs/openapi'
 import { env } from '@tutribu/env/server'
 import { Elysia } from 'elysia'
+import { staticPlugin } from '@elysiajs/static'
 import { AuthModule } from './modules/auth'
 import { BookingModule } from './modules/booking'
 import { PromoCodeModule } from './modules/promo-code'
@@ -15,6 +16,7 @@ new Elysia()
       credentials: true,
     }),
   )
+  .use(staticPlugin({ assets: 'public', prefix: '/public' }))
   .use(
     openapi({
       scalar: {

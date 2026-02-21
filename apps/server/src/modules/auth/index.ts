@@ -9,6 +9,9 @@ import {
   saveUser,
   signInUser,
   logout,
+  uploadUserAvatar,
+  deleteUserAvatar,
+  deleteAccount,
 } from './auth.service'
 import z from 'zod'
 
@@ -307,6 +310,137 @@ export const AuthModule: any = new Elysia({ prefix: '/api/auth' })
       detail: {
         summary: 'Get User Info',
         description: 'Retrieve information about the authenticated user',
+        tags: ['Auth'],
+      },
+    },
+  )
+  .post(
+    '/avatar',
+    async ({
+      jwt,
+      body: { avatar },
+      cookie: { accessToken },
+      headers: { authorization },
+      status,
+    }) => {
+      const token = (authorization ?? accessToken?.value) as string | undefined
+      const user = await jwt.verify(token)
+      if (!user) {
+        return status(401, { message: 'Unauthorized' })
+      }
+
+      const avatarUrl = await uploadUserAvatar(
+        user.userId as string,
+        avatar as File,
+      )
+      return { avatarUrl }
+    },
+    {
+      body: z.object({
+        avatar: z.any(), // Custom file upload type handling in Elysia
+      }),
+      response: {
+        200: z.object({
+          avatarUrl: z.string(),
+        }),
+        401: z.object({
+          message: z.string(),
+        }),
+        404: z.object({
+          message: z.string(),
+        }),
+      },
+      detail: {
+        summary: 'Upload Avatar',
+        description: 'Upload a new avatar image for the authenticated user',
+        tags: ['Auth'],
+      },
+    },
+  )
+  .delete(
+    '/avatar',
+    async ({
+      jwt,
+      cookie: { accessToken },
+      headers: { authorization },
+      status,
+    }) => {
+      const token = (authorization ?? accessToken?.value) as string | undefined
+      const user = await jwt.verify(token)
+      if (!user) {
+        return status(401, { message: 'Unauthorized' })
+      }
+
+      await deleteUserAvatar(user.userId as string)
+      return { message: 'Avatar deleted' }
+    },
+    {
+      response: {
+        200: z.object({
+          message: z.string(),
+        }),
+        401: z.object({
+          message: z.string(),
+        }),
+        404: z.object({
+          message: z.string(),
+        }),
+      },
+      detail: {
+        summary: 'Delete Avatar',
+        description: 'Remove the avatar image for the authenticated user',
+        tags: ['Auth'],
+      },
+    },
+  )
+  .delete(
+    '/account',
+    async ({
+      jwt,
+      cookie: { accessToken, refreshToken },
+      headers: { authorization },
+      status,
+      set,
+    }) => {
+      const token = (authorization ?? accessToken?.value) as string | undefined
+      const user = await jwt.verify(token)
+      if (!user) {
+        return status(401, { message: 'Unauthorized' })
+      }
+
+      await deleteAccount(user.userId as string)
+
+      // Clear cookies client-side (log out)
+      accessToken?.set({
+        ...COOKIE_OPTIONS,
+        value: '',
+        maxAge: 0,
+      })
+      refreshToken?.set({
+        ...COOKIE_OPTIONS,
+        value: '',
+        maxAge: 0,
+      })
+
+      set.headers['content-type'] = 'application/json'
+      return { message: 'Account deleted' }
+    },
+    {
+      response: {
+        200: z.object({
+          message: z.string(),
+        }),
+        401: z.object({
+          message: z.string(),
+        }),
+        404: z.object({
+          message: z.string(),
+        }),
+      },
+      detail: {
+        summary: 'Delete Account',
+        description:
+          'Remove the authenticated user account and all data completely',
         tags: ['Auth'],
       },
     },

@@ -58,4 +58,50 @@ export const authClient = {
       throw error
     }
   },
+
+  uploadAvatar: async (file: File): Promise<{ avatarUrl: string }> => {
+    try {
+      const formData = new FormData()
+      formData.append('avatar', file)
+      const response = await axios.post(`${API_AUTH_URL}/avatar`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      return response.data
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message || 'Failed to upload avatar',
+        )
+      }
+      throw error
+    }
+  },
+
+  deleteAvatar: async (): Promise<{ message: string }> => {
+    try {
+      const response = await axios.delete(`${API_AUTH_URL}/avatar`)
+      return response.data
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message || 'Failed to delete avatar',
+        )
+      }
+      throw error
+    }
+  },
+
+  deleteAccount: async (): Promise<{ message: string }> => {
+    try {
+      const response = await axios.delete(`${API_AUTH_URL}/account`)
+      return response.data
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message || 'Failed to delete account',
+        )
+      }
+      throw error
+    }
+  },
 }

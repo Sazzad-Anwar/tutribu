@@ -165,7 +165,7 @@ export default function Header() {
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="pb-2 cursor-pointer"
-                              onClick={() => navigate('/')}
+                              onClick={() => navigate('/profile')}
                             >
                               <img
                                 src="/images/profile.svg"

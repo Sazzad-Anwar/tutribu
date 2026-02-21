@@ -1,8 +1,6 @@
 import Header from '../components/header'
 import qs from 'qs'
 import PriceSummary from '../components/price-summary'
-import CheckoutForm from '../components/checkout-form'
-import { Progress } from '../components/ui/progress'
 import { useState, useEffect } from 'react'
 import { Checkbox } from '../components/ui/checkbox'
 import { Button } from '../components/ui/button'

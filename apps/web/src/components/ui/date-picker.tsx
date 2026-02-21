@@ -15,9 +15,10 @@ type Props = {
   value: Date | undefined
   onChange: (date: Date | undefined) => void
   className?: string
+  disabled?: boolean
 }
 
-export function DatePicker({ value, onChange, className }: Props) {
+export function DatePicker({ value, onChange, className, disabled }: Props) {
   const [open, setOpen] = React.useState(false)
   const ref = React.useRef<HTMLButtonElement>(null)
 
@@ -34,6 +35,7 @@ export function DatePicker({ value, onChange, className }: Props) {
         ref={ref}
         onClick={() => setOpen(true)}
         className={cn('flex items-center justify-between', className)}
+        disabled={disabled}
       >
         <span>{value ? value.toLocaleDateString() : 'Select date'}</span>
         <ChevronDownIcon className="text-[#0000001A]" />

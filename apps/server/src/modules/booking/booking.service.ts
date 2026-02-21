@@ -528,6 +528,83 @@ export async function removePromotionalCodeFromBooking(
 }
 
 /**
+ * Cancel a booking and process a 70% refund.
+ * - Cancels subscription if applicable
+ * - Refunds 70% of the amountPaid
+ * - Updates booking and payment statuses
+ */
+export async function cancelBooking(bookingId: string, userId: string) {
+  if (!bookingId) {
+    throw status(400, { message: 'bookingId is required' })
+  }
+
+  const booking = await db.booking.findUnique({
+    where: { id: bookingId },
+    include: { userInfo: true },
+  })
+
+  if (!booking) {
+    throw status(404, { message: 'Booking not found' })
+  }
+
+  if (booking.userInfo.userId !== userId) {
+    throw status(403, { message: 'Forbidden' })
+  }
+
+  if (booking.bookingStatus === 'CANCELLED') {
+    throw status(400, { message: 'Booking is already cancelled' })
+  }
+
+  // Calculate 70% refund of amountPaid
+  const refundAmount = Math.floor(booking.amountPaid * 0.7 * 100) / 100
+  const refundAmountInCents = Math.round(refundAmount * 100)
+
+  if (refundAmountInCents > 0) {
+    try {
+      if (booking.stripeSubscriptionId) {
+        const subscription = await stripeClient.subscriptions.retrieve(
+          booking.stripeSubscriptionId,
+          { expand: ['latest_invoice.payment_intent'] },
+        )
+
+        await stripeClient.subscriptions.cancel(booking.stripeSubscriptionId)
+
+        const invoice = subscription.latest_invoice as any
+        const paymentIntent = invoice?.payment_intent
+
+        if (paymentIntent && typeof paymentIntent !== 'string') {
+          await stripeClient.refunds.create({
+            payment_intent: paymentIntent.id,
+            amount: refundAmountInCents,
+            reason: 'requested_by_customer',
+          })
+        }
+      } else if (booking.stripePaymentIntentId) {
+        await stripeClient.refunds.create({
+          payment_intent: booking.stripePaymentIntentId,
+          amount: refundAmountInCents,
+          reason: 'requested_by_customer',
+        })
+      }
+    } catch (error: any) {
+      console.error('Stripe refund failed:', error)
+      throw status(400, { message: `Refund failed: ${error.message}` })
+    }
+  }
+
+  const updated = await db.booking.update({
+    where: { id: bookingId },
+    data: {
+      bookingStatus: 'CANCELLED',
+      paymentStatus: 'REFUNDED',
+    },
+    include: { promotionalCode: true },
+  })
+
+  return updated
+}
+
+/**
  * Fetch saved payment methods for a user
  */
 export async function getSavedPaymentMethods(userId: string) {
@@ -552,4 +629,54 @@ export async function getSavedPaymentMethods(userId: string) {
     exp_month: pm.card?.exp_month,
     exp_year: pm.card?.exp_year,
   }))
+}
+
+/**
+ * Attach a new payment method to a user's Stripe customer
+ */
+export async function savePaymentMethodToCustomer(
+  userId: string,
+  paymentMethodId: string,
+) {
+  const user = await db.user.findUnique({ where: { id: userId } })
+  if (!user) {
+    throw status(404, { message: 'User not found' })
+  }
+
+  if (!user.customerId) {
+    // Ideally this shouldn't happen if they went through signup properly
+    throw status(400, { message: 'User does not have a Stripe Customer ID' })
+  }
+
+  const attached = await stripeClient.paymentMethods.attach(paymentMethodId, {
+    customer: user.customerId,
+  })
+
+  return attached
+}
+
+/**
+ * Detach a payment method from a user's Stripe customer
+ */
+export async function deletePaymentMethodFromCustomer(
+  userId: string,
+  paymentMethodId: string,
+) {
+  const user = await db.user.findUnique({ where: { id: userId } })
+  if (!user || !user.customerId) {
+    throw status(404, { message: 'User or Stripe Customer not found' })
+  }
+
+  // Ensure the payment method belongs to the user's customer before detaching
+  const paymentMethod =
+    await stripeClient.paymentMethods.retrieve(paymentMethodId)
+
+  if (paymentMethod.customer !== user.customerId) {
+    throw status(403, {
+      message: 'Payment method does not belong to this user',
+    })
+  }
+
+  const detached = await stripeClient.paymentMethods.detach(paymentMethodId)
+  return detached
 }

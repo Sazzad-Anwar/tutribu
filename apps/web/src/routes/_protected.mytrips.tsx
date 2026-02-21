@@ -10,16 +10,43 @@ import {
   TableRow,
 } from '../components/ui/table'
 import { bookingClient } from '../lib/booking-client'
-import useSWR from 'swr'
+import useSWR, { useSWRConfig } from 'swr'
 import { cn } from '../lib/utils'
 import { type Booking } from '@tutribu/types'
+import { useState } from 'react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../components/ui/alert-dialog'
+import { toast } from 'sonner'
 
 export default function MyTrips() {
-  const { data, isLoading, error } = useSWR<Booking[]>(
-    'bookings',
-    bookingClient.list,
-  )
-  console.log(data)
+  const { mutate } = useSWRConfig()
+  const { data } = useSWR<Booking[]>('bookings', bookingClient.list)
+  const [isCancelling, setIsCancelling] = useState<string | null>(null)
+
+  const handleCancel = async (id: string) => {
+    try {
+      setIsCancelling(id)
+      await bookingClient.cancel(id)
+      toast.success(
+        'Trip cancelled successfully. 70% refund has been processed.',
+      )
+      mutate('bookings')
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to cancel trip')
+    } finally {
+      setIsCancelling(null)
+    }
+  }
+
   return (
     <main>
       <Header />
@@ -102,7 +129,44 @@ export default function MyTrips() {
                       </div>
                     </TableCell>
                     <TableCell className="block xl:table-cell pt-4 xl:pt-0 text-center text-[#C0C0C0] text-base xl:text-lg cursor-pointer">
-                      Cancel Trip
+                      {item.bookingStatus !== 'CANCELLED' ? (
+                        <AlertDialog>
+                          <AlertDialogTrigger className="hover:text-red-500 cursor-pointer transition-colors">
+                            {isCancelling === item.id
+                              ? 'Cancelling...'
+                              : 'Cancel Trip'}
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-sm">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Are you absolutely sure?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will
+                                permanently cancel your trip to Ibiza. Please
+                                note that{' '}
+                                <strong>
+                                  only 70% of the paid amount will be refunded
+                                </strong>{' '}
+                                to your original payment method.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Keep Trip</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleCancel(item.id)}
+                                className="bg-red-500 hover:bg-red-600 focus:ring-red-500"
+                              >
+                                Confirm Cancellation
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      ) : (
+                        <span className="text-gray-400 cursor-not-allowed">
+                          Cancelled
+                        </span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}

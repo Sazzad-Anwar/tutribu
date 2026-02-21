@@ -93,4 +93,50 @@ export const bookingClient = {
       throw error
     }
   },
+
+  cancel: async (id: string) => {
+    try {
+      const response = await axios.post(`${API_URL}/${id}/cancel`)
+      return response.data
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message || 'Failed to cancel booking',
+        )
+      }
+      throw error
+    }
+  },
+
+  savePaymentMethod: async (paymentMethodId: string) => {
+    try {
+      const response = await axios.post(`${API_URL}/payment-methods`, {
+        paymentMethodId,
+      })
+      return response.data
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message || 'Failed to save payment method',
+        )
+      }
+      throw error
+    }
+  },
+
+  deletePaymentMethod: async (paymentMethodId: string) => {
+    try {
+      const response = await axios.delete(
+        `${API_URL}/payment-methods/${paymentMethodId}`,
+      )
+      return response.data
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message || 'Failed to delete payment method',
+        )
+      }
+      throw error
+    }
+  },
 }

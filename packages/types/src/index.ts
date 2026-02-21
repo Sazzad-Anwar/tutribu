@@ -4,6 +4,7 @@ export const BaseSignUpSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.email('Invalid email address'),
+  gender: z.string().optional(),
   password: z.string().min(6, 'Password must be at least 6 characters long'),
   confirmPassword: z.string().optional(),
   dateOfBirth: z.iso.date().optional(),
@@ -136,15 +137,16 @@ export type UpdatePromotionalCodeInput = z.infer<
 export type PromotionalCode = z.infer<typeof PromotionalCodeSchema>
 
 export const UserInfoSchema = z.object({
-  id: z.string().cuid(),
+  id: z.cuid(),
   phoneNumber: z.string().optional().nullable(),
-  dateOfBirth: z.string().datetime().optional().nullable(),
+  dateOfBirth: z.iso.date().optional().nullable(),
   firstName: z.string().optional().nullable(),
   lastName: z.string().optional().nullable(),
   country: z.string().optional().nullable(),
   address: z.string().optional().nullable(),
   zipCode: z.string().optional().nullable(),
   city: z.string().optional().nullable(),
+  gender: z.string().optional().nullable(),
   userType: z.enum(['SELF', 'GUEST']).default('SELF'),
   userId: z.string().cuid().optional().nullable(),
 })

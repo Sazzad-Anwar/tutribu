@@ -10,6 +10,9 @@ import {
   applyPromotionalCodeToBooking,
   updateBookingStatus,
   getSavedPaymentMethods,
+  cancelBooking,
+  savePaymentMethodToCustomer,
+  deletePaymentMethodFromCustomer,
 } from './booking.service'
 import {
   ApplyPromoSchema,
@@ -131,6 +134,96 @@ export const BookingModule: any = new Elysia({ prefix: '/api/booking' })
         summary: 'Get Saved Payment Methods',
         description:
           'Get saved Stripe payment methods for the authenticated user',
+        tags: ['Booking'],
+      },
+    },
+  )
+  // Attach payment method to current user
+  .post(
+    '/payment-methods',
+    async ({
+      body,
+      jwt,
+      cookie: { accessToken },
+      headers: { authorization },
+      status,
+      set,
+    }) => {
+      const token = (authorization ?? accessToken?.value) as string | undefined
+      const jwtUser = await jwt.verify(token)
+      if (!jwtUser) {
+        set.headers['content-type'] = 'application/json'
+        return status(401, { message: 'Unauthorized' })
+      }
+
+      const { paymentMethodId } = body as any
+      if (!paymentMethodId) {
+        set.headers['content-type'] = 'application/json'
+        return status(400, { message: 'Payment method ID is required' })
+      }
+
+      const attached = await savePaymentMethodToCustomer(
+        jwtUser.userId as string,
+        paymentMethodId,
+      )
+
+      set.headers['content-type'] = 'application/json'
+      return status(201, attached)
+    },
+    {
+      body: z.object({
+        paymentMethodId: z.string(),
+      }),
+      response: {
+        201: z.any(),
+        400: z.object({ message: z.string() }),
+        401: z.object({ message: z.string() }),
+        404: z.object({ message: z.string() }),
+      },
+      detail: {
+        summary: 'Save Payment Method',
+        description: 'Attach a new Stripe payment method to the user',
+        tags: ['Booking'],
+      },
+    },
+  )
+  // Detach payment method from current user
+  .delete(
+    '/payment-methods/:id',
+    async ({
+      params,
+      jwt,
+      cookie: { accessToken },
+      headers: { authorization },
+      status,
+      set,
+    }) => {
+      const token = (authorization ?? accessToken?.value) as string | undefined
+      const jwtUser = await jwt.verify(token)
+      if (!jwtUser) {
+        set.headers['content-type'] = 'application/json'
+        return status(401, { message: 'Unauthorized' })
+      }
+
+      await deletePaymentMethodFromCustomer(
+        jwtUser.userId as string,
+        params.id as string,
+      )
+
+      set.headers['content-type'] = 'application/json'
+      return status(200, { message: 'Payment method deleted successfully' })
+    },
+    {
+      response: {
+        200: z.object({ message: z.string() }),
+        400: z.object({ message: z.string() }),
+        401: z.object({ message: z.string() }),
+        403: z.object({ message: z.string() }),
+        404: z.object({ message: z.string() }),
+      },
+      detail: {
+        summary: 'Delete Saved Payment Method',
+        description: 'Detach a saved Stripe payment method from the user',
         tags: ['Booking'],
       },
     },
@@ -257,6 +350,47 @@ export const BookingModule: any = new Elysia({ prefix: '/api/booking' })
       detail: {
         summary: 'Update Booking Status',
         description: 'Update the status of an existing booking (owner only)',
+        tags: ['Booking'],
+      },
+    },
+  )
+  // Cancel booking with 70% refund
+  .post(
+    '/:id/cancel',
+    async ({
+      params,
+      jwt,
+      cookie: { accessToken },
+      headers: { authorization },
+      status,
+      set,
+    }) => {
+      const token = (authorization ?? accessToken?.value) as string | undefined
+      const jwtUser = await jwt.verify(token)
+      if (!jwtUser) {
+        set.headers['content-type'] = 'application/json'
+        return status(401, { message: 'Unauthorized' })
+      }
+
+      const updated = await cancelBooking(
+        params.id as string,
+        jwtUser.userId as string,
+      )
+      set.headers['content-type'] = 'application/json'
+      return updated
+    },
+    {
+      response: {
+        200: z.any(),
+        400: z.object({ message: z.string() }),
+        401: z.object({ message: z.string() }),
+        403: z.object({ message: z.string() }),
+        404: z.object({ message: z.string() }),
+      },
+      detail: {
+        summary: 'Cancel Booking',
+        description:
+          'Cancel an existing booking (owner only). Issues a 70% refund.',
         tags: ['Booking'],
       },
     },

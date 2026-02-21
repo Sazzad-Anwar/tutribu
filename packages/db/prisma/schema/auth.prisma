@@ -27,6 +27,7 @@ model User {
 model UserInfo {
   id          String    @id @default(cuid())
   phoneNumber String?
+  gender      String?
   dateOfBirth DateTime?
   firstName   String?
   lastName    String?

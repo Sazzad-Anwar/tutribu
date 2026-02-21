@@ -327,3 +327,103 @@ export const logout = async (
 
   return { revoked: true, allDevices: false, userId: storedToken.userId }
 }
+
+export async function uploadUserAvatar(userId: string, file: File) {
+  const user = await db.user.findUnique({ where: { id: userId } })
+  if (!user) {
+    throw status(404, { message: 'User not found' })
+  }
+
+  const extension = file.name.split('.').pop()
+  const filename = `avatar-${userId}-${Date.now()}.${extension}`
+  const path = `public/upload/${filename}`
+  const url = `/public/upload/${filename}`
+
+  await Bun.write(path, file)
+
+  // Default clean up old file if exists
+  if (user.avatarUrl && user.avatarUrl.startsWith('/public/upload/')) {
+    const oldPath = user.avatarUrl.replace(/^\//, '')
+    const fileFile = Bun.file(oldPath)
+    if (await fileFile.exists()) {
+      import('node:fs').then((fs) => fs.promises.unlink(oldPath))
+    }
+  }
+
+  await db.user.update({
+    where: { id: userId },
+    data: { avatarUrl: url },
+  })
+
+  return url
+}
+
+export async function deleteUserAvatar(userId: string) {
+  const user = await db.user.findUnique({ where: { id: userId } })
+  if (!user) {
+    throw status(404, { message: 'User not found' })
+  }
+
+  if (user.avatarUrl && user.avatarUrl.startsWith('/public/upload/')) {
+    const oldPath = user.avatarUrl.replace(/^\//, '')
+    const fileFile = Bun.file(oldPath)
+    if (await fileFile.exists()) {
+      import('node:fs').then((fs) => fs.promises.unlink(oldPath))
+    }
+  }
+
+  await db.user.update({
+    where: { id: userId },
+    data: { avatarUrl: null },
+  })
+}
+
+export async function deleteAccount(userId: string) {
+  const user = await db.user.findUnique({ where: { id: userId } })
+  if (!user) {
+    throw status(404, { message: 'User not found' })
+  }
+
+  // 1. Clean up avatar file if exists
+  if (user.avatarUrl && user.avatarUrl.startsWith('/public/upload/')) {
+    const oldPath = user.avatarUrl.replace(/^\//, '')
+    const fileFile = Bun.file(oldPath)
+    if (await fileFile.exists()) {
+      import('node:fs').then((fs) =>
+        fs.promises.unlink(oldPath).catch(() => {}),
+      )
+    }
+  }
+
+  // 2. Delete Stripe Customer records
+  if (user.customerId) {
+    try {
+      await stripeClient.customers.del(user.customerId)
+    } catch (e) {
+      console.error('Failed to delete Stripe customer', e)
+    }
+  }
+
+  // 3. Delete all database records inside a transaction
+  await db.$transaction(async (tx) => {
+    // Find associated UserInfo ids to cascade Bookings manually if needed
+    const userInfos = await tx.userInfo.findMany({ where: { userId } })
+    const userInfoIds = userInfos.map((u) => u.id)
+
+    // Delete bookings linked to these UserInfo records
+    if (userInfoIds.length > 0) {
+      await tx.booking.deleteMany({
+        where: { userInfoId: { in: userInfoIds } },
+      })
+    }
+
+    // Now delete the dependent UserInfos
+    await tx.userInfo.deleteMany({ where: { userId } })
+
+    // Delete refresh tokens
+    await tx.refreshToken.deleteMany({ where: { userId } })
+
+    // Finally, wipe the user record
+    await tx.user.delete({ where: { id: userId } })
+  })
+}
