@@ -25,6 +25,7 @@ import type z from 'zod'
 import { Checkbox } from '../components/ui/checkbox'
 import { Label } from '../components/ui/label'
 import { useAuth } from '../context/auth-context'
+import { useGoogleLogin } from '@react-oauth/google'
 
 export default function SignUpPage() {
   const navigate = useNavigate()
@@ -39,6 +40,28 @@ export default function SignUpPage() {
       lastName: '',
       email: '',
       password: '',
+    },
+  })
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setIsLoading(true)
+        await authClient.signInWithGoogle(tokenResponse.access_token)
+        toast.success('Signed in with Google successfully')
+        navigate('/')
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : 'Failed to sign in with Google',
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    onError: () => {
+      toast.error('Google login failed')
     },
   })
 
@@ -90,6 +113,7 @@ export default function SignUpPage() {
               </h1>
               <Button
                 type="button"
+                onClick={() => loginWithGoogle()}
                 className="w-full h-12 shadow-sm border-2 hover:bg-brand hover:text-white hover:border-brand bg-[#F5F5F5] text-brand border-[#00000033] py-3.5 rounded-[10px] font-bold text-base leading-[120%]"
               >
                 Continue with Google

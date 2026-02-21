@@ -45,6 +45,22 @@ export const authClient = {
     }
   },
 
+  signInWithGoogle: async (
+    token: string,
+  ): Promise<AuthResponse<{ accessToken: string }>> => {
+    try {
+      const response = await axios.post(`${API_AUTH_URL}/google`, { token })
+      return response.data
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message || 'Failed to sign in with Google',
+        )
+      }
+      throw error
+    }
+  },
+
   updateProfile: async (data: UserInfo) => {
     try {
       const response = await axios.patch(`${API_USER_INFO}/${data.id}`, data)

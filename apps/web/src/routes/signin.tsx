@@ -24,6 +24,7 @@ import {
   FieldLabel,
 } from '../components/ui/field'
 import { useAuth } from '../context/auth-context'
+import { useGoogleLogin } from '@react-oauth/google'
 
 export default function SignInPage() {
   const navigate = useNavigate()
@@ -35,6 +36,29 @@ export default function SignInPage() {
     defaultValues: {
       email: '',
       password: '',
+    },
+  })
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setIsLoading(true)
+        await authClient.signInWithGoogle(tokenResponse.access_token)
+        toast.success('Signed in with Google successfully')
+        await checkAuth()
+        navigate('/')
+      } catch (error) {
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : 'Failed to sign in with Google',
+        )
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    onError: () => {
+      toast.error('Google login failed')
     },
   })
 
@@ -177,6 +201,7 @@ export default function SignInPage() {
                   <span className="text-xs text-center text-[#9A9AB0]">Or</span>
                   <Button
                     type="button"
+                    onClick={() => loginWithGoogle()}
                     className="w-full h-12 border-2 hover:bg-brand hover:text-white bg-transparent text-brand border-brand py-3.5 rounded-[10px] font-bold text-base leading-[120%]"
                   >
                     Continue with Google

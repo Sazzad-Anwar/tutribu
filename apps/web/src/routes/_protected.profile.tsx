@@ -42,6 +42,7 @@ const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
 function ProfileInner() {
   const { user, checkAuth, logout } = useAuth()
+  console.log(user)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
 
@@ -116,7 +117,11 @@ function ProfileInner() {
             <div className="flex items-center gap-8 md:gap-12.5">
               <Avatar className="size-19 md:size-50">
                 <AvatarImage
-                  src={import.meta.env.VITE_API_URL + user?.avatarUrl}
+                  src={
+                    user?.avatarUrl?.includes('googleusercontent.com')
+                      ? user.avatarUrl
+                      : import.meta.env.VITE_API_URL + user?.avatarUrl
+                  }
                 />
                 <AvatarFallback className="text-base md:text-4xl">
                   {user?.firstName?.[0]}

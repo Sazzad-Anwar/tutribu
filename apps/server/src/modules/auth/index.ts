@@ -12,6 +12,7 @@ import {
   uploadUserAvatar,
   deleteUserAvatar,
   deleteAccount,
+  googleAuth,
 } from './auth.service'
 import z from 'zod'
 
@@ -118,6 +119,48 @@ export const AuthModule: any = new Elysia({ prefix: '/api/auth' })
       detail: {
         summary: 'Sign In',
         description: 'User sign-in endpoint',
+        tags: ['Auth'],
+      },
+    },
+  )
+  .post(
+    '/google',
+    async ({ jwt, body, cookie: { accessToken, refreshToken }, set }) => {
+      const user = await googleAuth(body)
+      const token = await jwt.sign({ userId: user.userId })
+
+      accessToken?.set({
+        ...COOKIE_OPTIONS,
+        value: token,
+        maxAge: ACCESS_TOKEN_MAX_AGE,
+      })
+
+      refreshToken?.set({
+        ...COOKIE_OPTIONS,
+        value: user.refreshToken,
+        maxAge: REFRESH_TOKEN_MAX_AGE,
+      })
+      set.headers['content-type'] = 'application/json'
+
+      return {
+        accessToken: token,
+      }
+    },
+    {
+      body: z.object({
+        token: z.string(),
+      }),
+      response: {
+        200: z.object({
+          accessToken: z.jwt(),
+        }),
+        400: z.object({
+          message: z.string(),
+        }),
+      },
+      detail: {
+        summary: 'Google Sign In',
+        description: 'Google OAuth sign in/up endpoint',
         tags: ['Auth'],
       },
     },

@@ -136,7 +136,14 @@ export default function Header() {
                         <DropdownMenuTrigger>
                           <Avatar className="size-6 xl:size-9">
                             <AvatarImage
-                              src={user?.avatarUrl}
+                              src={
+                                user?.avatarUrl?.includes(
+                                  'googleusercontent.com',
+                                )
+                                  ? user?.avatarUrl
+                                  : import.meta.env.VITE_API_URL +
+                                    user?.avatarUrl
+                              }
                               alt={user?.firstName}
                             />
                             <AvatarFallback className="bg-brand text-white text-sm 2xl:text-xl">

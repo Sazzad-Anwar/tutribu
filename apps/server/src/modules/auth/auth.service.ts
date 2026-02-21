@@ -29,15 +29,17 @@ export async function hashToken(token: string) {
   return Buffer.from(hash).toString('hex')
 }
 
-const createStripeCustomer = async (userDetails: SignUpInput) => {
+const createStripeCustomer = async (
+  userDetails: Partial<SignUpInput> & { email: string },
+) => {
   const customer = await stripeClient.customers.create({
-    name: `${userDetails.firstName} ${userDetails.lastName}`,
+    name: `${userDetails.firstName || ''} ${userDetails.lastName || ''}`.trim(),
     email: userDetails.email,
     address: {
-      line1: userDetails.address,
-      postal_code: userDetails.zipCode,
-      city: userDetails.city,
-      country: userDetails.country,
+      line1: userDetails.address || undefined,
+      postal_code: userDetails.zipCode || undefined,
+      city: userDetails.city || undefined,
+      country: userDetails.country || undefined,
     },
   })
   return customer.id
@@ -128,6 +130,75 @@ export const signInUser = async ({ email, password }: SignInInput) => {
   if (!isPasswordValid) {
     throw status(400, {
       message: 'Invalid email or password',
+    })
+  }
+
+  const refreshToken = generateRefreshToken()
+  const hashedRefreshToken = await hashToken(refreshToken)
+
+  await db.refreshToken.create({
+    data: {
+      tokenHash: hashedRefreshToken,
+      userId: user.id,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+    },
+  })
+
+  return {
+    userId: user.id,
+    refreshToken,
+  }
+}
+
+export const googleAuth = async ({ token }: { token: string }) => {
+  const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+  if (!res.ok) {
+    throw status(400, { message: 'Invalid Google token' })
+  }
+  const payload: any = await res.json()
+  if (!payload || !payload.email) {
+    throw status(400, { message: 'Invalid Google token payload' })
+  }
+
+  const { email, given_name, family_name, picture } = payload
+
+  let user = await db.user.findUnique({
+    where: { email },
+    include: { refreshTokens: true },
+  })
+
+  if (!user) {
+    const randomPassword = crypto.randomUUID()
+    const hashedPassword = await hashPassword(randomPassword)
+
+    const createdUser = await db.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        avatarUrl: picture || null,
+        authProvider: 'GOOGLE',
+        userInfos: {
+          create: {
+            firstName: given_name || '',
+            lastName: family_name || '',
+            userType: 'SELF',
+          },
+        },
+      },
+    })
+
+    const stripeCustomerId = await createStripeCustomer({
+      email,
+      firstName: given_name || '',
+      lastName: family_name || '',
+    })
+
+    user = await db.user.update({
+      where: { id: createdUser.id },
+      data: { customerId: stripeCustomerId },
+      include: { refreshTokens: true },
     })
   }
 

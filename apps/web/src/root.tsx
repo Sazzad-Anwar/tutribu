@@ -58,15 +58,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 import { AuthProvider } from './context/auth-context'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 
 export default function App() {
   return (
-    <AuthProvider>
-      <div className="grid grid-rows-[auto_1fr] h-svh">
-        <Outlet />
-      </div>
-      <Toaster richColors />
-    </AuthProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <AuthProvider>
+        <div className="grid grid-rows-[auto_1fr] h-svh">
+          <Outlet />
+        </div>
+        <Toaster richColors />
+      </AuthProvider>
+    </GoogleOAuthProvider>
   )
 }
 
