@@ -7,7 +7,7 @@ export const BaseSignUpSchema = z.object({
   gender: z.string().optional(),
   password: z.string().min(6, 'Password must be at least 6 characters long'),
   confirmPassword: z.string().optional(),
-  dateOfBirth: z.iso.date().optional(),
+  dateOfBirth: z.string().optional(),
   phoneNumber: z.string().optional(),
   country: z.string().optional(),
   address: z.string().optional(),
@@ -52,6 +52,28 @@ export const ChangePasswordSchema = z.object({
     .string()
     .min(6, 'New password must be at least 6 characters long'),
 })
+
+export const ForgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+})
+
+export const ResetPasswordBaseSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
+  password: z.string().min(6, 'Password must be at least 6 characters long'),
+  confirmPassword: z.string().min(6, 'Please confirm your password'),
+})
+
+export const ResetPasswordSchema = ResetPasswordBaseSchema.superRefine(
+  ({ password, confirmPassword }, ctx) => {
+    if (confirmPassword !== password) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Passwords do not match',
+        path: ['confirmPassword'],
+      })
+    }
+  },
+)
 
 export const ExtraFeatureSchema = z.object({
   name: z.string().min(1),
@@ -104,6 +126,8 @@ export type BookingSignUpInput = z.infer<typeof BookingSignUpSchema>
 export type User = z.infer<typeof UserSchema>
 export type SignInInput = z.infer<typeof SignInSchema>
 export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>
+export type ForgotPasswordInput = z.infer<typeof ForgotPasswordSchema>
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>
 export type Booking = z.infer<typeof BookingSchema>
 export type CreateBookingInput = z.infer<typeof CreateBookingSchema>
 export type ApplyPromoInput = z.infer<typeof ApplyPromoSchema>
@@ -139,7 +163,7 @@ export type PromotionalCode = z.infer<typeof PromotionalCodeSchema>
 export const UserInfoSchema = z.object({
   id: z.cuid(),
   phoneNumber: z.string().optional().nullable(),
-  dateOfBirth: z.iso.date().optional().nullable(),
+  dateOfBirth: z.string().optional().nullable(),
   firstName: z.string().optional().nullable(),
   lastName: z.string().optional().nullable(),
   country: z.string().optional().nullable(),

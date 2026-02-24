@@ -1,5 +1,10 @@
 import Elysia from 'elysia'
-import { ChangePasswordSchema, SignUpSchema } from '@tutribu/types'
+import {
+  ChangePasswordSchema,
+  ForgotPasswordSchema,
+  ResetPasswordBaseSchema,
+  SignUpSchema,
+} from '@tutribu/types'
 import jwt from '@elysiajs/jwt'
 import { env } from '@tutribu/env/server'
 import {
@@ -13,6 +18,8 @@ import {
   deleteUserAvatar,
   deleteAccount,
   googleAuth,
+  forgotPassword,
+  resetPassword,
 } from './auth.service'
 import z from 'zod'
 
@@ -484,6 +491,42 @@ export const AuthModule: any = new Elysia({ prefix: '/api/auth' })
         summary: 'Delete Account',
         description:
           'Remove the authenticated user account and all data completely',
+        tags: ['Auth'],
+      },
+    },
+  )
+  .post(
+    '/forgot-password',
+    async ({ body }) => {
+      return await forgotPassword(body)
+    },
+    {
+      body: ForgotPasswordSchema,
+      response: {
+        200: z.object({ message: z.string() }),
+        404: z.object({ message: z.string() }),
+      },
+      detail: {
+        summary: 'Forgot Password',
+        description: 'Send a password reset link to the user email',
+        tags: ['Auth'],
+      },
+    },
+  )
+  .post(
+    '/reset-password',
+    async ({ body }) => {
+      return await resetPassword(body)
+    },
+    {
+      body: ResetPasswordBaseSchema.omit({ confirmPassword: true }),
+      response: {
+        200: z.object({ message: z.string() }),
+        400: z.object({ message: z.string() }),
+      },
+      detail: {
+        summary: 'Reset Password',
+        description: 'Reset user password using a token',
         tags: ['Auth'],
       },
     },

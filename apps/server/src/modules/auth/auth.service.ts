@@ -1,13 +1,15 @@
-// crypto.ts
 import type {
   SignUpInput,
   SignInInput,
   ChangePasswordInput,
+  ForgotPasswordInput,
+  ResetPasswordInput,
 } from '@tutribu/types'
 import bcrypt from 'bcryptjs'
 import db from '@tutribu/db'
 import { status } from 'elysia'
 import { stripeClient } from '@/lib/stripe'
+import { sendPasswordResetEmail } from '@/lib/mailer'
 
 export async function hashPassword(password: string) {
   return await bcrypt.hash(password, 12)
@@ -497,4 +499,81 @@ export async function deleteAccount(userId: string) {
     // Finally, wipe the user record
     await tx.user.delete({ where: { id: userId } })
   })
+}
+
+export async function forgotPassword({ email }: ForgotPasswordInput) {
+  const user = await db.user.findUnique({
+    where: { email },
+    include: { userInfos: { where: { userType: 'SELF' } } },
+  })
+
+  if (!user) {
+    throw status(404, { message: 'User with this email not found' })
+  }
+
+  const token = crypto.randomUUID()
+  const hashedToken = await hashToken(token)
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
+
+  await db.passwordResetToken.create({
+    data: {
+      tokenHash: hashedToken,
+      userId: user.id,
+      expiresAt,
+    },
+  })
+
+  // BETTER_AUTH_URL is the frontend URL
+  const resetLink = `${process.env.BETTER_AUTH_URL || 'http://localhost:3000'}/reset-password?token=${token}`
+  await sendPasswordResetEmail(
+    user.email,
+    user.userInfos[0]?.firstName || 'User',
+    resetLink,
+  )
+
+  return { message: 'Password reset link sent to your email' }
+}
+
+export async function resetPassword({
+  token,
+  password,
+}: Omit<ResetPasswordInput, 'confirmPassword'>) {
+  const hashedToken = await hashToken(token)
+
+  const resetToken = await db.passwordResetToken.findUnique({
+    where: { tokenHash: hashedToken },
+    include: { user: true },
+  })
+
+  if (!resetToken) {
+    throw status(400, { message: 'Invalid or expired reset token' })
+  }
+
+  if (resetToken.expiresAt < new Date()) {
+    await db.passwordResetToken.delete({ where: { id: resetToken.id } })
+    throw status(400, { message: 'Reset token has expired' })
+  }
+
+  const hashedPassword = await hashPassword(password)
+
+  await db.$transaction(async (tx) => {
+    // 1. Update password
+    await tx.user.update({
+      where: { id: resetToken.userId },
+      data: { password: hashedPassword },
+    })
+
+    // 2. Revoke all refresh tokens
+    await tx.refreshToken.updateMany({
+      where: { userId: resetToken.userId, revoked: false },
+      data: { revoked: true },
+    })
+
+    // 3. Delete the reset token
+    await tx.passwordResetToken.delete({
+      where: { id: resetToken.id },
+    })
+  })
+
+  return { message: 'Password reset successfully' }
 }

@@ -208,9 +208,9 @@ export default function UserBookingSignup() {
                     value={
                       field.value ? dayjs(field.value).toDate() : undefined
                     }
-                    onChange={(date) =>
-                      field.onChange(dayjs(date).format('YYYY-MM-DD'))
-                    }
+                    onChange={(date) => {
+                      field.onChange(dayjs(date).toISOString())
+                    }}
                     className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-4 lg:py-3 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg"
                   />
                   {fieldState.invalid && (
@@ -258,11 +258,14 @@ export default function UserBookingSignup() {
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </PopoverTrigger>
                     <PopoverContent
-                      className="w-(--anchor-width) p-0"
+                      className="w-(--anchor-width) p-0 rounded-lg overflow-hidden"
                       align="start"
                     >
                       <Command>
-                        <CommandInput placeholder="Search country..." />
+                        <CommandInput
+                          className="text-base md:text-lg"
+                          placeholder="Search country..."
+                        />
                         <CommandList>
                           <CommandEmpty>No country found.</CommandEmpty>
                           <CommandGroup>
@@ -287,7 +290,9 @@ export default function UserBookingSignup() {
                                       : 'opacity-0',
                                   )}
                                 />
-                                {country.name}
+                                <span className="text-base md:text-lg">
+                                  {country.name}
+                                </span>
                               </CommandItem>
                             ))}
                           </CommandGroup>

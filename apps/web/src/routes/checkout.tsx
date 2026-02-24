@@ -256,7 +256,6 @@ function CheckoutInner() {
         <span className="text-sm block max-w-fit lg:text-md xl:text-lg font-normal bg-brand text-white p-2.5 rounded-[10px] mb-6">
           <span>Step 2 of 2</span>
         </span>
-
         <div className="grid grid-cols-1 lg:grid-cols-5 xl:grid-cols-3 gap-7 lg:gap-10">
           <div className="col-span-1 order-2 lg:order-1 lg:col-span-3 xl:col-span-2">
             <h1 className="font-bold text-[32px] xl:text-[54px] font-tinos">
@@ -435,17 +434,6 @@ function CheckoutInner() {
                           className="size-5 accent-brand cursor-pointer"
                         />
                         <div className="flex items-center gap-4">
-                          <img
-                            src={
-                              card.brand === 'visa'
-                                ? '/images/visa.png'
-                                : card.brand === 'mastercard'
-                                  ? '/images/master-card.png'
-                                  : '/images/paypal.png'
-                            }
-                            alt={card.brand}
-                            className="h-8 max-w-[50px] object-contain"
-                          />
                           <p className="text-lg xl:text-xl font-medium">
                             **** **** **** {card.last4}
                           </p>

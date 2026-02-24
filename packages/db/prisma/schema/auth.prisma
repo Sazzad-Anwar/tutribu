@@ -9,16 +9,17 @@ enum UserType {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  password      String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  authProvider  AuthProvider   @default(PASSWORD)
-  customerId    String?
-  avatarUrl     String?
-  refreshTokens RefreshToken[]
-  userInfos     UserInfo[]
+  id                  String               @id @default(cuid())
+  email               String               @unique
+  password            String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  authProvider        AuthProvider         @default(PASSWORD)
+  customerId          String?
+  avatarUrl           String?
+  refreshTokens       RefreshToken[]
+  userInfos           UserInfo[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([createdAt])
   @@index([customerId])
@@ -55,4 +56,16 @@ model RefreshToken {
   @@index([expiresAt])
   @@index([userId, revoked])
   @@index([replacedByTokenId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
 }

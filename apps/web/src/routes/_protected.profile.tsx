@@ -170,17 +170,28 @@ function ProfileInner() {
                   >
                     {isDeletingAvatar ? 'Deleting...' : 'Delete'}
                   </AlertDialogTrigger>
-                  <AlertDialogContent className="rounded-sm">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Remove profile picture?
+                  <AlertDialogContent className="rounded-xl p-8 data-[size=default]:sm:max-w-lg">
+                    <AlertDialogHeader className="space-y-4">
+                      <AlertDialogTitle className="space-y-4 text-base lg:text-xl">
+                        <img
+                          src="/images/logo.svg"
+                          alt="Logo"
+                          className="h-9 w-28 lg:h-12 lg:w-[162px] xl:h-16 xl:w-[182px]"
+                          height={64}
+                          width={182}
+                        />
+                        <span className="font-semibold text-base md:text-2xl">
+                          Remove profile picture?
+                        </span>
                       </AlertDialogTitle>
-                      <AlertDialogDescription>
+                      <AlertDialogDescription className="text-base xl:text-lg">
                         This will permanently remove your profile picture.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Keep it</AlertDialogCancel>
+                      <AlertDialogCancel className="bg-brand mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg">
+                        Cancel
+                      </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={async () => {
                           try {
@@ -194,9 +205,9 @@ function ProfileInner() {
                             setIsDeletingAvatar(false)
                           }
                         }}
-                        className="bg-red-500 hover:bg-red-600 focus:ring-red-500"
+                        className="bg-red-500 mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg"
                       >
-                        Delete
+                        Yes, delete
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -356,7 +367,7 @@ function ProfileInner() {
                           field.value ? dayjs(field.value).toDate() : undefined
                         }
                         onChange={(date) =>
-                          field.onChange(dayjs(date).format('YYYY-MM-DD'))
+                          field.onChange(dayjs(date).toISOString())
                         }
                         className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-4 lg:py-3 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                       />

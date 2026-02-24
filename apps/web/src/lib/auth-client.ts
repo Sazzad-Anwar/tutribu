@@ -120,4 +120,34 @@ export const authClient = {
       throw error
     }
   },
+
+  forgotPassword: async (data: {
+    email: string
+  }): Promise<{ message: string }> => {
+    try {
+      const response = await axios.post(`${API_AUTH_URL}/forgot-password`, data)
+      return response.data
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message || 'Failed to send reset link',
+        )
+      }
+      throw error
+    }
+  },
+
+  resetPassword: async (data: any): Promise<{ message: string }> => {
+    try {
+      const response = await axios.post(`${API_AUTH_URL}/reset-password`, data)
+      return response.data
+    } catch (error) {
+      if (isAxiosError(error)) {
+        throw new Error(
+          error.response?.data?.message || 'Failed to reset password',
+        )
+      }
+      throw error
+    }
+  },
 }
