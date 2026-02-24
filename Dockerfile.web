@@ -1,0 +1,25 @@
+FROM oven/bun:latest AS builder
+
+WORKDIR /app
+
+# Copy the entire monorepo
+COPY . .
+
+# Install dependencies
+RUN bun install
+
+# Build the web application
+RUN cd apps/web && bun run build
+
+# Stage 2: Serve with a small container (or just for build output)
+# We can use a simple busybox image to hold the files, or even easier,
+# share the build directory with Caddy in docker-compose.
+FROM busybox:latest
+
+WORKDIR /app
+
+# Copy the build output from the builder
+COPY --from=builder /app/apps/web/build/client /app/public
+
+# This container doesn't really need to do much, it just holds the static files
+CMD ["sh", "-c", "while true; do sleep 3600; done"]

@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    ports:
+      - '3001:3001'
+    env_file:
+      - apps/server/.env
+    restart: always
+    networks:
+      - tutribu-network
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    volumes:
+      - web-build:/app/public
+    networks:
+      - tutribu-network
+
+  caddy:
+    image: caddy:latest
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - web-build:/var/www/html
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - server
+      - web
+    restart: always
+    networks:
+      - tutribu-network
+
+networks:
+  tutribu-network:
+    driver: bridge
+
+volumes:
+  web-build:
+  caddy_data:
+  caddy_config:
