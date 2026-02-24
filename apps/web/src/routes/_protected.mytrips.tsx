@@ -169,12 +169,21 @@ export default function MyTrips() {
                                 ? 'Cancelling...'
                                 : 'Cancel Trip'}
                             </AlertDialogTrigger>
-                            <AlertDialogContent className="rounded-sm">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Are you absolutely sure?
+                            <AlertDialogContent className="rounded-xl p-8 data-[size=default]:sm:max-w-lg">
+                              <AlertDialogHeader className="space-y-4">
+                                <AlertDialogTitle className="space-y-4 text-base lg:text-xl">
+                                  <img
+                                    src="/images/logo.svg"
+                                    alt="Logo"
+                                    className="h-9 w-28 lg:h-12 lg:w-[162px] xl:h-16 xl:w-[182px]"
+                                    height={64}
+                                    width={182}
+                                  />
+                                  <span className="font-semibold text-base md:text-2xl">
+                                    Are you absolutely sure?
+                                  </span>
                                 </AlertDialogTitle>
-                                <AlertDialogDescription>
+                                <AlertDialogDescription className="text-base xl:text-lg">
                                   This action cannot be undone. This will
                                   permanently cancel your trip to Ibiza. Please
                                   note that{' '}
@@ -185,12 +194,14 @@ export default function MyTrips() {
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Keep Trip</AlertDialogCancel>
+                                <AlertDialogCancel className="bg-brand mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg">
+                                  Keep Trip
+                                </AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => handleCancel(item.id)}
-                                  className="bg-red-500 hover:bg-red-600 focus:ring-red-500"
+                                  className="bg-red-500 mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg"
                                 >
-                                  Confirm Cancellation
+                                  Cancel Trip
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>

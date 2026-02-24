@@ -4,6 +4,17 @@ import Footer from '../components/footer'
 import Header from '../components/header'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'
 import { Button } from '../components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../components/ui/alert-dialog'
 import { Controller, useForm } from 'react-hook-form'
 import { useAuth } from '../context/auth-context'
 import {
@@ -20,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select'
-import { DatePicker } from '../components/ui/date-picker'
+import { DatePickerDialog } from '../components/ui/date-picker'
 import dayjs from 'dayjs'
 import { toast } from 'sonner'
 import { authClient } from '../lib/auth-client'
@@ -88,14 +99,6 @@ function ProfileInner() {
   }
 
   const handleDeleteAccount = async () => {
-    if (
-      !window.confirm(
-        'Are you sure you want to delete your account? This action is irreversible and all your data will be lost.',
-      )
-    ) {
-      return
-    }
-
     try {
       setIsDeletingAccount(true)
       await authClient.deleteAccount()
@@ -160,25 +163,44 @@ function ProfileInner() {
                 >
                   {isUploadingAvatar ? 'Uploading...' : 'Upload new picture'}
                 </Button>
-                <Button
-                  variant="ghost"
-                  disabled={isDeletingAvatar || !user?.avatarUrl}
-                  onClick={async () => {
-                    try {
-                      setIsDeletingAvatar(true)
-                      await authClient.deleteAvatar()
-                      await checkAuth()
-                      toast.success('Avatar removed successfully')
-                    } catch (error) {
-                      toast.error('Failed to remove avatar')
-                    } finally {
-                      setIsDeletingAvatar(false)
-                    }
-                  }}
-                  className="py-4 px-9 rounded-[12px] h-12 md:h-19 bg-[#F8F8F8] text-base md:text-2xl font-normal"
-                >
-                  {isDeletingAvatar ? 'Deleting...' : 'Delete'}
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    disabled={isDeletingAvatar || !user?.avatarUrl}
+                    className="py-4 px-9 rounded-[12px] h-12 md:h-19 bg-[#F8F8F8] text-base md:text-2xl font-normal transition-colors hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isDeletingAvatar ? 'Deleting...' : 'Delete'}
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-sm">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Remove profile picture?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove your profile picture.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Keep it</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={async () => {
+                          try {
+                            setIsDeletingAvatar(true)
+                            await authClient.deleteAvatar()
+                            await checkAuth()
+                            toast.success('Avatar removed successfully')
+                          } catch (error) {
+                            toast.error('Failed to remove avatar')
+                          } finally {
+                            setIsDeletingAvatar(false)
+                          }
+                        }}
+                        className="bg-red-500 hover:bg-red-600 focus:ring-red-500"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
           </div>
@@ -328,7 +350,7 @@ function ProfileInner() {
                       >
                         Date of birth
                       </FieldLabel>
-                      <DatePicker
+                      <DatePickerDialog
                         disabled={!isEditing}
                         value={
                           field.value ? dayjs(field.value).toDate() : undefined
@@ -659,14 +681,45 @@ function ProfileInner() {
             )}
           </div>
           <div className="mt-8 md:mt-20">
-            <Button
-              variant="destructive"
-              disabled={isDeletingAccount}
-              onClick={handleDeleteAccount}
-              className="px-6 md:px-8 py-3 md:py-4.2 text-sm md:text-xl font-semibold h-14 md:h-17 rounded-[5px] w-full md:w-auto"
-            >
-              {isDeletingAccount ? 'Deleting...' : 'Delete Account'}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger
+                disabled={isDeletingAccount}
+                className="bg-red-500 hover:bg-red-600 focus:ring-red-500 text-white px-6 md:px-8 py-3 md:py-4.2 text-sm md:text-xl font-semibold h-14 md:h-17 rounded-[5px] w-full md:w-auto transition-colors disabled:opacity-50"
+              >
+                {isDeletingAccount ? 'Deleting...' : 'Delete Account'}
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-xl p-8 data-[size=default]:sm:max-w-lg">
+                <AlertDialogHeader className="space-y-4">
+                  <AlertDialogTitle className="space-y-4 text-base lg:text-xl">
+                    <img
+                      src="/images/logo.svg"
+                      alt="Logo"
+                      className="h-9 w-28 lg:h-12 lg:w-[162px] xl:h-16 xl:w-[182px]"
+                      height={64}
+                      width={182}
+                    />
+                    <span className="font-semibold text-base md:text-2xl">
+                      Are you absolutely sure?
+                    </span>
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-base xl:text-lg">
+                    This action cannot be undone. This will permanently delete
+                    your account and remove your data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="bg-brand mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteAccount}
+                    className="bg-red-500 mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg"
+                  >
+                    Yes, delete account
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </section>

@@ -232,7 +232,7 @@ function CheckoutInner() {
       toast.success('Booking created successfully', {
         description: 'You will be notified when your booking is confirmed',
       })
-      navigate('/my-bookings')
+      navigate('/mytrips')
       setIsLoading(false)
     } catch (error) {
       console.log(error)

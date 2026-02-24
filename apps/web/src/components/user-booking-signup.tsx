@@ -10,7 +10,7 @@ import { Controller, useForm } from 'react-hook-form'
 import { useAuth } from '../context/auth-context'
 import { Field, FieldError, FieldGroup, FieldLabel } from './ui/field'
 import { Input } from './ui/input'
-import { DatePicker } from './ui/date-picker'
+import { DatePickerDialog } from './ui/date-picker'
 import dayjs from 'dayjs'
 import { useEffect, useState } from 'react'
 import {
@@ -204,7 +204,7 @@ export default function UserBookingSignup() {
                   >
                     Date of birth (Official, as in passport)
                   </FieldLabel>
-                  <DatePicker
+                  <DatePickerDialog
                     value={
                       field.value ? dayjs(field.value).toDate() : undefined
                     }

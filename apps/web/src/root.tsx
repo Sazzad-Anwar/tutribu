@@ -73,29 +73,57 @@ export default function App() {
   )
 }
 
+import Header from './components/header'
+import Footer from './components/footer'
+import { Button } from './components/ui/button'
+import { Link } from 'react-router'
+
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   let message = 'Oops!'
   let details = 'An unexpected error occurred.'
-  let stack: string | undefined
+
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? '404' : 'Error'
     details =
-      error.status === 404
-        ? 'The requested page could not be found.'
-        : error.statusText || details
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message
-    stack = error.stack
+      import.meta.env.DEV && error && error instanceof Error
+        ? error.message
+        : details
+    return (
+      <>
+        <Header />
+        <main className="container mx-auto flex flex-col items-center justify-center py-20 lg:py-32 text-center space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-4xl lg:text-7xl font-bold text-brand">
+              {error.status === 404 ? '404' : 'Error'}
+            </h1>
+            <h2 className="text-2xl lg:text-4xl font-semibold text-[#473D3E]">
+              {error.status === 404
+                ? 'Lost in Adventure?'
+                : 'Something went wrong'}
+            </h2>
+          </div>
+          <p className="max-w-md text-sm lg:text-lg text-[#7A7A7A]">
+            {error.status === 404
+              ? 'The requested page could not be found.'
+              : details}
+          </p>
+          <Link to="/">
+            <Button className="bg-brand text-white px-8 py-6 rounded-[5px] text-lg hover:bg-brand/90 transition-all font-medium">
+              Back to Home
+            </Button>
+          </Link>
+        </main>
+        <Footer />
+      </>
+    )
   }
+
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
+    <main className="pt-16 p-4 container mx-auto text-center flex flex-col items-center gap-4">
+      <h1 className="text-3xl font-bold">{message}</h1>
+      <p className="text-gray-600">{details}</p>
+      <Link to="/">
+        <Button variant="outline">Back to Home</Button>
+      </Link>
     </main>
   )
 }
