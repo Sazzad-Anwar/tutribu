@@ -1,7 +1,7 @@
 import { Link, NavLink, useNavigate } from 'react-router'
 
 import { cn } from '../lib/utils'
-import { CalendarDays, Heart, Menu, Search } from 'lucide-react'
+import { Heart, Menu, Search } from 'lucide-react'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { useAuth } from '../context/auth-context'
