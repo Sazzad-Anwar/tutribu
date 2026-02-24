@@ -49,6 +49,7 @@ function ProfileInner() {
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const [isDeletingAvatar, setIsDeletingAvatar] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const stripe = useStripe()
   const elements = useElements()
@@ -79,6 +80,7 @@ function ProfileInner() {
         id: user?.id,
       })
       toast.success('Profile updated successfully')
+      setIsEditing(false)
     } catch (error) {
       console.log(error)
       toast.error('Failed to update profile')
@@ -186,16 +188,24 @@ function ProfileInner() {
                 Personal Information
               </p>
               <Button
-                type="submit"
+                type="button"
+                onClick={() => {
+                  if (isEditing) {
+                    form.reset()
+                  }
+                  setIsEditing(!isEditing)
+                }}
                 variant="outline"
                 className="border-[#D7D7D7] py-px md:py-2.5 px-5 rounded-[9px] md:rounded-[15px] font-normal text-xs md:text-xl text-[#473D3E] gap-2.5 h-8 md:h-13"
               >
-                <img
-                  src="/images/edit-icon.png"
-                  alt="edit"
-                  className="size-3 md:size-6"
-                />
-                Edit
+                {!isEditing && (
+                  <img
+                    src="/images/edit-icon.png"
+                    alt="edit"
+                    className="size-3 md:size-6"
+                  />
+                )}
+                {isEditing ? 'Cancel' : 'Edit'}
               </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-7.5">
@@ -214,10 +224,11 @@ function ProfileInner() {
                       <Input
                         {...field}
                         id="first-name"
+                        disabled={!isEditing}
                         aria-invalid={fieldState.invalid}
                         placeholder="First Name"
                         autoComplete="off"
-                        className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg"
+                        className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -241,10 +252,11 @@ function ProfileInner() {
                       <Input
                         {...field}
                         id="last-name"
+                        disabled={!isEditing}
                         aria-invalid={fieldState.invalid}
                         placeholder="Last Name"
                         autoComplete="off"
-                        className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg"
+                        className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -268,6 +280,7 @@ function ProfileInner() {
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value || undefined}
+                        disabled={!isEditing}
                       >
                         <SelectTrigger
                           id="gender"
@@ -316,13 +329,14 @@ function ProfileInner() {
                         Date of birth
                       </FieldLabel>
                       <DatePicker
+                        disabled={!isEditing}
                         value={
                           field.value ? dayjs(field.value).toDate() : undefined
                         }
                         onChange={(date) =>
                           field.onChange(dayjs(date).format('YYYY-MM-DD'))
                         }
-                        className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-4 lg:py-3 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg"
+                        className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-4 lg:py-3 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -353,10 +367,11 @@ function ProfileInner() {
                       <Input
                         {...field}
                         id="phone-number"
+                        disabled={!isEditing}
                         aria-invalid={fieldState.invalid}
                         placeholder="Phone Number"
                         autoComplete="off"
-                        className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg"
+                        className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -380,10 +395,11 @@ function ProfileInner() {
                       <Input
                         {...field}
                         id="email"
+                        disabled={!isEditing}
                         aria-invalid={fieldState.invalid}
-                        placeholder="Phone Number"
+                        placeholder="Email Address"
                         autoComplete="off"
-                        className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg"
+                        className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -393,6 +409,24 @@ function ProfileInner() {
                 />
               </FieldGroup>
             </div>
+
+            {isEditing && (
+              <Button
+                type="submit"
+                disabled={
+                  form.formState.isSubmitting || !form.formState.isDirty
+                }
+                className="bg-brand mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg"
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Spinner /> Updating...
+                  </>
+                ) : (
+                  'Update Profile'
+                )}
+              </Button>
+            )}
           </form>
           <div className="mt-15">
             <div className="flex justify-between mt-10 md:mt-12 mb-3">
