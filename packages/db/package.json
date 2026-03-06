@@ -17,14 +17,14 @@
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.1.0",
-    "@prisma/client": "catalog:",
+    "@prisma/client": "^7.4.2",
     "@tutribu/env": "workspace:*",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@tutribu/config": "workspace:*",
-    "prisma": "^7.1.0",
+    "prisma": "^7.4.2",
     "typescript": "^5"
   }
 }

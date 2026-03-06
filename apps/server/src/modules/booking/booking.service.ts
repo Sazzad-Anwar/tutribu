@@ -24,28 +24,6 @@ import countries from '@/lib/country.json'
  */
 
 /**
- * Validate a promotional code string and return the promotional record if valid.
- * A valid code:
- *  - exists
- *  - now is between validFrom and validTo (inclusive)
- */
-export async function getValidPromotionalCodeByCode(code: string) {
-  if (!code) return null
-  const promo = await db.promotionalCode.findUnique({
-    where: { code },
-  })
-
-  if (!promo) return null
-
-  const now = new Date()
-  if (promo.validFrom > now || promo.validTo < now) {
-    return null
-  }
-
-  return promo
-}
-
-/**
  * Calculate the initial charge amount based on the payment plan.
  * - ONE_TIME: full totalAmount
  * - LOWEST_DEPOSIT: $300 flat (or totalAmount if less than $300)
@@ -323,6 +301,8 @@ export async function createBooking(input: CreateBookingInput) {
       groupId: input.groupId,
       totalAmount: input.totalAmount,
       specialRequest: input.specialRequest ?? null,
+      usedDiscountLink: input.usedDiscountLink ?? null,
+      tripId: input.tripId,
       paymentPlan,
       checkingType: input.checkingType ?? 'SELF',
       bookingStatus: input.bookingStatus ?? 'PENDING',
@@ -384,7 +364,6 @@ export async function getBookingById(bookingId: string, ownerId?: string) {
   const booking = await db.booking.findUnique({
     where: { id: bookingId },
     include: {
-      promotionalCode: true,
       userInfo: true,
     },
   })
@@ -414,61 +393,10 @@ export async function listBookingsForUser(userId: string) {
         userId,
       },
     },
-    include: {
-      promotionalCode: true,
-    },
     orderBy: { createdAt: 'desc' },
   })
 
   return bookings
-}
-
-/**
- * Apply a promotional code to an existing booking.
- * - Validates the promotional code window
- * - Rejects if booking already has a promotionalCode applied
- * - Adjusts the booking totalAmount by subtracting the promotional discount
- */
-export async function applyPromotionalCodeToBooking(
-  bookingId: string,
-  code: string,
-) {
-  if (!bookingId || !code) {
-    throw status(400, { message: 'bookingId and code are required' })
-  }
-
-  const [booking, promo] = await Promise.all([
-    db.booking.findUnique({ where: { id: bookingId } }),
-    getValidPromotionalCodeByCode(code),
-  ])
-
-  if (!booking) {
-    throw status(404, { message: 'Booking not found' })
-  }
-  if (!promo) {
-    throw status(400, { message: 'Invalid or expired promotional code' })
-  }
-  if (booking.promotionalCodeId) {
-    throw status(400, {
-      message: 'Promotional code already applied to this booking',
-    })
-  }
-
-  // Apply discount as absolute amount
-  const newTotal = Math.max(0, booking.totalAmount - promo.discount)
-
-  const updated = await db.booking.update({
-    where: { id: bookingId },
-    data: {
-      promotionalCodeId: promo.id,
-      totalAmount: newTotal,
-    },
-    include: {
-      promotionalCode: true,
-    },
-  })
-
-  return updated
 }
 
 /**
@@ -488,7 +416,6 @@ export async function updateBookingStatus(
   const updated = await db.booking.update({
     where: { id: bookingId },
     data: updates,
-    include: { promotionalCode: true },
   })
 
   return updated
@@ -508,20 +435,13 @@ export async function removePromotionalCodeFromBooking(
   if (!booking) {
     throw status(404, { message: 'Booking not found' })
   }
-  if (!booking.promotionalCodeId) {
-    throw status(400, {
-      message: 'No promotional code applied to this booking',
-    })
-  }
 
   const updated = await db.booking.update({
     where: { id: bookingId },
     data: {
-      promotionalCodeId: null,
       // If caller supplied a restoreTotalAmount use it; otherwise keep the existing total
       totalAmount: restoreTotalAmount ?? booking.totalAmount,
     },
-    include: { promotionalCode: true },
   })
 
   return updated
@@ -598,7 +518,6 @@ export async function cancelBooking(bookingId: string, userId: string) {
       bookingStatus: 'CANCELLED',
       paymentStatus: 'REFUNDED',
     },
-    include: { promotionalCode: true },
   })
 
   return updated

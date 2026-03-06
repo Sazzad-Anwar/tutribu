@@ -145,6 +145,10 @@
   @variant md {
     padding-inline: 25px;
   }
+  @variant xl {
+    max-width: 1400px;
+    padding-inline: 40px;
+  }
   padding-inline: 20px;
   margin-inline: auto;
 }

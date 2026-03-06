@@ -5,7 +5,6 @@ import { Elysia } from 'elysia'
 import { staticPlugin } from '@elysiajs/static'
 import { AuthModule } from './modules/auth'
 import { BookingModule } from './modules/booking'
-import { PromoCodeModule } from './modules/promo-code'
 import { UserInfoModule } from './modules/user-info'
 
 new Elysia()
@@ -59,7 +58,6 @@ new Elysia()
   )
   .use(AuthModule)
   .use(BookingModule)
-  .use(PromoCodeModule)
   .use(UserInfoModule)
   .listen(3001, () => {
     console.log('Server is running on http://localhost:3001')

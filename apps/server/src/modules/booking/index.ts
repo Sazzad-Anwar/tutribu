@@ -7,18 +7,13 @@ import {
   createBooking,
   listBookingsForUser,
   getBookingById,
-  applyPromotionalCodeToBooking,
   updateBookingStatus,
   getSavedPaymentMethods,
   cancelBooking,
   savePaymentMethodToCustomer,
   deletePaymentMethodFromCustomer,
 } from './booking.service'
-import {
-  ApplyPromoSchema,
-  CreateBookingSchema,
-  UpdateStatusSchema,
-} from '@tutribu/types'
+import { CreateBookingSchema, UpdateStatusSchema } from '@tutribu/types'
 
 /**
  * BookingModule - routes for booking operations
@@ -43,7 +38,6 @@ export const BookingModule: any = new Elysia({ prefix: '/api/booking' })
     }) => {
       const token = (authorization ?? accessToken?.value) as string | undefined
       const jwtUser = await jwt.verify(token)
-      console.log({ jwtUser })
       if (!jwtUser) {
         set.headers['content-type'] = 'application/json'
         return status(401, { message: 'Unauthorized' })
@@ -261,51 +255,6 @@ export const BookingModule: any = new Elysia({ prefix: '/api/booking' })
         summary: 'Get Booking',
         description:
           'Retrieve a booking by id (must belong to authenticated user)',
-        tags: ['Booking'],
-      },
-    },
-  )
-  // Apply promotional code to booking
-  .post(
-    '/:id/apply-promo',
-    async ({
-      params,
-      body,
-      jwt,
-      cookie: { accessToken },
-      headers: { authorization },
-      status,
-      set,
-    }) => {
-      const token = (authorization ?? accessToken?.value) as string | undefined
-      const jwtUser = await jwt.verify(token)
-      if (!jwtUser) {
-        set.headers['content-type'] = 'application/json'
-        return status(401, { message: 'Unauthorized' })
-      }
-
-      // Ensure booking belongs to user
-      await getBookingById(params.id as string, jwtUser.userId as string)
-
-      const updated = await applyPromotionalCodeToBooking(
-        params.id as string,
-        (body as any).code,
-      )
-      set.headers['content-type'] = 'application/json'
-      return updated
-    },
-    {
-      body: ApplyPromoSchema,
-      response: {
-        200: z.any(),
-        400: z.object({ message: z.string() }),
-        401: z.object({ message: z.string() }),
-        404: z.object({ message: z.string() }),
-      },
-      detail: {
-        summary: 'Apply Promotional Code',
-        description:
-          'Apply a promotional code to an existing booking (owner only)',
         tags: ['Booking'],
       },
     },

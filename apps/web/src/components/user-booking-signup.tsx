@@ -29,7 +29,7 @@ import { Button } from './ui/button'
 import { toast } from 'sonner'
 import { axios, cn } from '../lib/utils'
 import { authClient } from '../lib/auth-client'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import qs from 'qs'
 import PriceSummary from './price-summary'
 import countries from '../lib/country.json'
@@ -42,9 +42,14 @@ import {
   CommandItem,
   CommandList,
 } from './ui/command'
+import { apiClient } from '../lib/api-client'
+import useSWR from 'swr'
 
 export default function UserBookingSignup() {
   const navigate = useNavigate()
+  const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const groupItem = searchParams.get('group_item')
   const { user, checkAuth, isAuthenticated } = useAuth()
   const [formType] = useState<'signup' | 'booking'>(
     isAuthenticated ? 'booking' : 'signup',
@@ -54,6 +59,9 @@ export default function UserBookingSignup() {
   const resolverSchema = isAuthenticated ? BookingSignUpSchema : SignUpSchema
   const [showPassword, setShowPassword] = useState(false)
   const [openCountry, setOpenCountry] = useState(false)
+  const { data, isLoading } = useSWR(`/wp/v2/trips/?slug=${id}`)
+  const trip = data?.[0]
+  const group = groupItem ? trip?.meta?.group_item?.[groupItem] : undefined
   const form = useForm<SignUpInput | BookingSignUpInput>({
     resolver: zodResolver(resolverSchema),
     defaultValues: {
@@ -98,6 +106,30 @@ export default function UserBookingSignup() {
     }
   }, [isAuthenticated, bookingFor])
 
+  const updateGroupItem = async () => {
+    try {
+      await apiClient.patch(`/wp/v2/trips/${trip?.id}`, {
+        meta: {
+          group_item: {
+            ...trip?.meta?.group_item,
+            [groupItem as string]: {
+              ...group,
+              seats: group?.seats - 1,
+            },
+          },
+        },
+      })
+      toast.success(
+        'Booked a seat for 15 minutes until you complete the payment',
+      )
+    } catch (error) {
+      console.log(error)
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to update group item',
+      )
+    }
+  }
+
   const onSubmit = async (data: SignUpInput | BookingSignUpInput) => {
     try {
       if (!isAuthenticated) {
@@ -118,11 +150,13 @@ export default function UserBookingSignup() {
         city: form.getValues('city'),
         userType: bookingFor as 'GUEST' | 'SELF',
       })
+      await updateGroupItem()
       navigate({
-        pathname: '/checkout',
+        pathname: `/checkout/${id}`,
         search: qs.stringify({
           bookingFor,
           specialRequest,
+          group_item: groupItem,
         }),
       })
     } catch (error) {
@@ -613,7 +647,7 @@ export default function UserBookingSignup() {
           </FieldGroup>
         </form>
       </div>
-      <PriceSummary totalPrice={1200} />
+      <PriceSummary />
     </div>
   )
 }

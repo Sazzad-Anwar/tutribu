@@ -7,6 +7,7 @@ import {
   ScrollRestoration,
 } from 'react-router'
 
+import PageSkeleton from './components/page-skeleton'
 import type { Route } from './+types/root'
 
 import './index.css'
@@ -24,6 +25,10 @@ export const links: Route.LinksFunction = () => [
     href: 'https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap',
   },
 ]
+
+export function HydrateFallback() {
+  return <PageSkeleton />
+}
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -59,17 +64,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
 import { AuthProvider } from './context/auth-context'
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import { SWRConfig } from 'swr'
+import { fetcher } from './lib/api-client'
 
 export default function App() {
   return (
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-      <AuthProvider>
-        <div className="grid grid-rows-[auto_1fr] h-svh">
-          <Outlet />
-        </div>
-        <Toaster richColors />
-      </AuthProvider>
-    </GoogleOAuthProvider>
+    <SWRConfig value={{ fetcher }}>
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <AuthProvider>
+          <div className="grid grid-rows-[auto_1fr] h-svh">
+            <Outlet />
+          </div>
+          <Toaster richColors />
+        </AuthProvider>
+      </GoogleOAuthProvider>
+    </SWRConfig>
   )
 }
 

@@ -19,8 +19,11 @@ import {
   useElements,
 } from '@stripe/react-stripe-js'
 import Footer from '../components/footer'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams, useSearchParams } from 'react-router'
 import { Spinner } from '../components/ui/spinner'
+import useSWR from 'swr'
+import { apiClient } from '../lib/api-client'
+import { Skeleton } from '../components/ui/skeleton'
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
 
@@ -33,7 +36,17 @@ const DEPOSIT_TYPES = {
 
 function CheckoutInner() {
   const navigate = useNavigate()
-  const [totalAmount, setTotalAmount] = useState(1200)
+  const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  const groupItem = searchParams.get('group_item')
+  const { data, isLoading: isTripLoading } = useSWR(`/wp/v2/trips/?slug=${id}`)
+  const trip = data?.[0]
+  const group =
+    !isTripLoading && groupItem
+      ? trip?.meta?.group_item?.[groupItem]
+      : undefined
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const [totalAmount, setTotalAmount] = useState(Number(group?.price))
   const [promoCode, setPromoCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const { user } = useAuth()
@@ -53,11 +66,62 @@ function CheckoutInner() {
   })
   const stripe = useStripe()
   const elements = useElements()
+  const { data: imageData, isLoading: isLoadingImage } = useSWR(
+    trip?.featured_media ? `/wp/v2/media/${trip?.featured_media}` : null,
+  )
+  const { data: discountId, isLoading: isLoadingDiscountId } = useSWR(
+    trip?.id ? `/jet-rel/9/parents/${trip?.id}` : null,
+  )
+  const { data: discountDetails } = useSWR(
+    !isLoadingDiscountId && discountId?.[0]?.parent_object_id
+      ? `/wp/v2/discounts/${discountId?.[0]?.parent_object_id}`
+      : null,
+  )
+
+  const updateGroupItem = async () => {
+    try {
+      await apiClient.patch(`/wp/v2/trips/${trip?.id}`, {
+        meta: {
+          group_item: {
+            ...trip?.meta?.group_item,
+            [groupItem as string]: {
+              ...group,
+              seats: group?.seats + 1,
+            },
+          },
+        },
+      })
+      toast.success(
+        'Your booking is cancelled and your seat is now available for others',
+      )
+    } catch (error) {
+      console.log(error)
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to update group item',
+      )
+    }
+  }
+
+  useEffect(() => {
+    if (discountDetails?.meta?.coupon) {
+      setFormData((prev) => ({
+        ...prev,
+        discount: discountDetails?.meta?.discount,
+      }))
+    }
+  }, [discountDetails])
+
+  useEffect(() => {
+    if (group?.price) {
+      setTotalAmount(Number(group?.price))
+    }
+  }, [group])
 
   useEffect(() => {
     setIsMounted(true)
-    if (timeLeft <= 0) {
-      navigate('/')
+    if (timeLeft <= 0 && groupItem) {
+      updateGroupItem()
+      navigate(`/${id}?group_item=${groupItem}`)
     }
 
     const timer = setInterval(() => {
@@ -93,14 +157,20 @@ function CheckoutInner() {
 
   const handleApplyPromoCode = async (code: string) => {
     try {
-      const discountAmount = totalAmount * 0.15
-      const data = { success: true, discount: discountAmount }
-      setTotalAmount((prev) => prev - discountAmount)
-      if (data.success) {
-        setFormData((prev) => ({
-          ...prev,
-          discount: data.discount,
-        }))
+      if (code === discountDetails?.meta?.coupon) {
+        const discountAmount =
+          totalAmount -
+          Number(discountDetails?.meta?.discount_amount_fixed_minus)
+        const data = { success: true, discount: discountAmount }
+        setTotalAmount(discountAmount)
+        if (data.success) {
+          setFormData((prev) => ({
+            ...prev,
+            discount: data.discount,
+          }))
+        }
+      } else {
+        toast.warning('Sorry the coupon code is expired or wrong!!')
       }
     } catch (error) {
       console.log(error)
@@ -218,7 +288,8 @@ function CheckoutInner() {
       const data: CreateBookingInput = {
         userInfoId: user!.id,
         specialRequest: query.specialRequest as string,
-        promotionalCode: promoCode,
+        usedDiscountLink: discountDetails?.link,
+        tripId: trip?.id,
         bookingStatus: 'PENDING',
         paymentStatus: 'PENDING',
         paymentPlan: formData.depositType as CreateBookingInput['paymentPlan'],
@@ -245,12 +316,20 @@ function CheckoutInner() {
   return (
     <main>
       <Header />
-      <section className="h-[200px] px-5 md:px-0 overflow-hidden md:h-[300px] lg:h-[400px] w-full">
-        <img
-          className="h-full w-full object-cover rounded-[10px] md:rounded-none  object-center"
-          src="/images/checkout-banner.svg"
-          alt="banner-image"
-        />
+      <section className="h-[200px] px-5 md:px-0 relative overflow-hidden md:h-[300px] lg:h-[400px] w-full">
+        {(isLoadingImage || !imageLoaded) && (
+          <Skeleton className="absolute inset-0 h-full w-full rounded-[10px] md:rounded-none" />
+        )}
+        {imageData?.media_details?.sizes?.full?.source_url && (
+          <img
+            className={`h-full w-full object-cover rounded-[10px] md:rounded-none object-center transition-opacity duration-500 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            src={imageData.media_details.sizes.full.source_url}
+            alt={trip?.title?.rendered}
+            onLoad={() => setImageLoaded(true)}
+          />
+        )}
       </section>
       <section className="container mx-auto py-6 lg:py-10">
         <span className="text-sm block max-w-fit lg:text-md xl:text-lg font-normal bg-brand text-white p-2.5 rounded-[10px] mb-6">
@@ -276,20 +355,26 @@ function CheckoutInner() {
               <p className="text-base xl:text-xl">
                 Select any extras you would like to add to your trip
               </p>
-
-              <label className="flex justify-between items-center">
-                <span className="flex items-center gap-2.5">
-                  <Checkbox
-                    checked={formData.isOwnRoom}
-                    onCheckedChange={(value) =>
-                      yourOwnRoom(Boolean(value), 456)
-                    }
-                    className="fill-brand size-7.5 rounded-[5px]"
-                  />
-                  <span className="text-xl">Your own room</span>
-                </span>
-                <span className="text-2xl">$456</span>
-              </label>
+              {group?.room_options?.['Private rooms'] && (
+                <label className="flex justify-between items-center">
+                  <span className="flex items-center gap-2.5">
+                    <Checkbox
+                      checked={formData.isOwnRoom}
+                      onCheckedChange={(value) =>
+                        yourOwnRoom(
+                          Boolean(value),
+                          Number(group?.private_rooms_price),
+                        )
+                      }
+                      className="fill-brand size-7.5 rounded-[5px]"
+                    />
+                    <span className="text-xl">Your own room</span>
+                  </span>
+                  <span className="text-2xl">
+                    ${group?.private_rooms_price}
+                  </span>
+                </label>
+              )}
 
               <div className="border rounded-[10px] p-7.5 flex flex-col xl:flex-row justify-between items-center">
                 <div className="space-y-7.5 order-2 xl:order-0">

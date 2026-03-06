@@ -84,7 +84,8 @@ export const ExtraFeatureSchema = z.object({
 export const BookingSchema = z.object({
   userInfoId: z.cuid(),
   specialRequest: z.string().optional(),
-  promotionalCode: z.string().optional(),
+  usedDiscountLink: z.string().optional(),
+  tripId: z.number(),
   bookingStatus: z
     .enum(['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED'])
     .default('PENDING'),
