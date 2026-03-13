@@ -25,7 +25,7 @@ export default function Trips({ params }: Route.ComponentProps) {
   const trip = data?.[0]
   const groups = trip?.meta?.group_item
     ? Object.entries(trip?.meta?.group_item).map(([key, value]) => ({
-        ...value,
+        ...(value as any),
         group_item: key,
       }))
     : []
@@ -109,7 +109,7 @@ export default function Trips({ params }: Route.ComponentProps) {
             <img
               src="/images/people-group.png"
               alt="people-group"
-              className="w-[288px] lg:w-[230px] h-[100] lg:h-20"
+              className="w-[288px] lg:w-[230px] h-[100px] lg:h-20"
             />
             <div className="space-y-5 lg:-space-y-2.5 text-center">
               <h1 className="text-[32px]">
@@ -125,7 +125,7 @@ export default function Trips({ params }: Route.ComponentProps) {
             Call: (331) 214-3422
           </button>
         </div>
-        {groups?.map((item) => (
+        {groups?.map((item: any) => (
           <div
             key={'group-' + item?.group_item}
             className="mt-12.5 border border-[#0000004D] rounded-[15px] lg:rounded-[20px] flex flex-col lg:flex-row justify-between items-center"
@@ -241,7 +241,7 @@ export default function Trips({ params }: Route.ComponentProps) {
                   </div>
                   <div>
                     <Link
-                      to={`/trip/${id}?group_item=${item?.group_item}`}
+                      to={`/checkout/${id}?group_item=${item?.group_item}`}
                       className="w-full lg:w-[325px] mx-auto block text-center rounded-[5px] bg-black text-white py-4"
                     >
                       Join this group
