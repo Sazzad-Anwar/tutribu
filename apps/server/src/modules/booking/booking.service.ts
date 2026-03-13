@@ -479,8 +479,9 @@ export async function cancelBooking(
     throw status(400, { message: 'Booking is already cancelled' })
   }
 
-  // Calculate 70% refund of amountPaid
-  const refundAmount = Math.floor(booking.amountPaid * 0.7 * 100) / 100
+  // Calculate refund amount (100% for admin cancellations, 70% otherwise)
+  const refundMultiplier = isAdmin ? 1.0 : 0.7
+  const refundAmount = Math.floor(booking.amountPaid * refundMultiplier * 100) / 100
   const refundAmountInCents = Math.round(refundAmount * 100)
 
   if (refundAmountInCents > 0) {

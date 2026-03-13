@@ -106,13 +106,19 @@ export default function AdminUsers() {
                 <div className="bg-gray-100 rounded-full p-6 mb-4">
                   <User className="w-12 h-12 text-gray-400" />
                 </div>
-                <h3 className="text-2xl font-medium text-gray-900 mb-2">No users found</h3>
-                <p className="text-gray-500">There are no users registered in the system yet.</p>
+                <h3 className="text-2xl font-medium text-gray-900 mb-2">
+                  No users found
+                </h3>
+                <p className="text-gray-500">
+                  There are no users registered in the system yet.
+                </p>
               </div>
             ) : (
               users.map((user) => {
                 const info = user.userInfos?.[0]
-                const fullName = info ? `${info.firstName} ${info.lastName}` : 'Anonymous User'
+                const fullName = info
+                  ? `${info.firstName} ${info.lastName}`
+                  : 'Anonymous User'
 
                 return (
                   <div
@@ -127,7 +133,9 @@ export default function AdminUsers() {
                       <div
                         className={cn(
                           'px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider',
-                          user.role === 'ADMIN' ? 'bg-[#00AEEF] text-white' : 'bg-gray-100 text-gray-500'
+                          user.role === 'ADMIN'
+                            ? 'bg-[#00AEEF] text-white'
+                            : 'bg-gray-100 text-gray-500',
                         )}
                       >
                         {user.role}
@@ -140,7 +148,9 @@ export default function AdminUsers() {
                         <h2 className="text-2xl font-tinos font-bold text-gray-900 line-clamp-1">
                           {fullName}
                         </h2>
-                        <p className="text-xs font-mono text-gray-400 mt-1">ID: {user.id}</p>
+                        <p className="text-xs font-mono text-gray-400 mt-1">
+                          ID: {user.id}
+                        </p>
                       </div>
 
                       <div className="space-y-3">
@@ -150,14 +160,18 @@ export default function AdminUsers() {
                         </div>
                         <div className="flex items-center gap-3 text-gray-600">
                           <Calendar className="w-4 h-4 shrink-0" />
-                          <span className="text-sm">Joined {dayjs(user.createdAt).format('MMM D, YYYY')}</span>
+                          <span className="text-sm">
+                            Joined {dayjs(user.createdAt).format('MMM D, YYYY')}
+                          </span>
                         </div>
                         <div className="flex items-center gap-3">
                           <Shield className="w-4 h-4 shrink-0 text-[#00AEEF]" />
                           <span
                             className={cn(
                               'text-sm font-medium',
-                              user.isSuspended ? 'text-red-500' : 'text-green-500'
+                              user.isSuspended
+                                ? 'text-red-500'
+                                : 'text-green-500',
                             )}
                           >
                             {user.isSuspended ? 'Suspended' : 'Account Active'}
@@ -180,7 +194,7 @@ export default function AdminUsers() {
                               'w-full h-12 rounded-xl text-base font-medium transition-all gap-2 inline-flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed',
                               user.isSuspended
                                 ? 'bg-[#00AEEF]/5 text-[#00AEEF] hover:bg-[#00AEEF] hover:text-white'
-                                : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white'
+                                : 'bg-red-50 text-red-500 hover:bg-red-500 hover:text-white',
                             )}
                           >
                             {isUpdating === user.id ? (
@@ -197,24 +211,36 @@ export default function AdminUsers() {
                               </>
                             )}
                           </AlertDialogTrigger>
-                          <AlertDialogContent className="rounded-2xl p-8">
+                          <AlertDialogContent className="rounded-2xl p-8 data-[size=default]:sm:max-w-lg">
                             <AlertDialogHeader className="space-y-4">
                               <AlertDialogTitle className="flex flex-col gap-4 text-2xl font-tinos">
-                                <img src="/images/logo.svg" alt="Logo" className="h-10 w-auto self-start" />
-                                {user.isSuspended ? 'Confirm Account Activation' : 'Confirm Account Suspension'}
+                                <img
+                                  src="/images/logo.svg"
+                                  alt="Logo"
+                                  className="h-10 w-auto self-start"
+                                />
+                                {user.isSuspended
+                                  ? 'Confirm Account Activation'
+                                  : 'Confirm Account Suspension'}
                               </AlertDialogTitle>
                               <AlertDialogDescription className="text-lg text-gray-600">
                                 {user.isSuspended ? (
                                   <>
-                                    You are about to restore access for <strong>{fullName}</strong>.
-                                    The user will be able to log in and manage their bookings immediately.
+                                    You are about to restore access for{' '}
+                                    <strong>{fullName}</strong>. The user will
+                                    be able to log in and manage their bookings
+                                    immediately.
                                   </>
                                 ) : (
                                   <>
-                                    You are about to suspend <strong>{fullName}</strong>.
-                                    The user will be immediately blocked from logging into their account.
-                                    <br /><br />
-                                    This does not cancel their existing bookings.
+                                    You are about to suspend{' '}
+                                    <strong>{fullName}</strong>. The user will
+                                    be immediately blocked from logging into
+                                    their account.
+                                    <br />
+                                    <br />
+                                    This does not cancel their existing
+                                    bookings.
                                   </>
                                 )}
                               </AlertDialogDescription>
@@ -227,10 +253,14 @@ export default function AdminUsers() {
                                 onClick={() => handleToggleSuspension(user.id)}
                                 className={cn(
                                   'h-14 rounded-xl text-lg flex-1 text-white',
-                                  user.isSuspended ? 'bg-[#00AEEF] hover:bg-[#009EDF]' : 'bg-red-500 hover:bg-red-600'
+                                  user.isSuspended
+                                    ? 'bg-[#00AEEF] hover:bg-[#009EDF]'
+                                    : 'bg-red-500 hover:bg-red-600',
                                 )}
                               >
-                                {user.isSuspended ? 'Unsuspend' : 'Confirm Suspension'}
+                                {user.isSuspended
+                                  ? 'Unsuspend'
+                                  : 'Confirm Suspension'}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>

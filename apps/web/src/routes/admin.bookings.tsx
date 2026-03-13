@@ -313,7 +313,7 @@ export default function AdminBookings() {
                                       <br />
                                       This will automatically trigger a{' '}
                                       <span className="text-red-600 font-bold">
-                                        70% refund
+                                        full refund
                                       </span>{' '}
                                       of the paid amount (${item.amountPaid}) to
                                       the customer's original payment method.
