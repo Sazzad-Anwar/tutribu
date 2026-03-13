@@ -25,7 +25,7 @@ import {
 
 export default function Header() {
   const navigate = useNavigate()
-  const { isAuthenticated, user, logout, isLoading } = useAuth()
+  const { isAuthenticated, user, logout, isLoading, isAdmin } = useAuth()
   const links = [
     { to: '/', label: 'Home' },
     { to: '/destination', label: 'Destination' },
@@ -157,6 +157,21 @@ export default function Header() {
                           align="end"
                         >
                           <DropdownMenuGroup>
+                            {isAdmin && (
+                              <DropdownMenuItem
+                                className="pt-2 pb-2 cursor-pointer hover:bg-brand"
+                                onClick={() => navigate('/admin/users')}
+                              >
+                                <img
+                                  src="/images/profile.svg"
+                                  alt="admin"
+                                  className="size-6 xl:size-8"
+                                />
+                                <span className="text-sm xl:text-lg">
+                                  Dashboard
+                                </span>
+                              </DropdownMenuItem>
+                            )}
                             <DropdownMenuItem
                               className="pt-2 pb-2 cursor-pointer hover:bg-brand"
                               onClick={() => navigate('/mytrips')}
@@ -252,6 +267,21 @@ export default function Header() {
                                 </NavLink>
                               )
                             })}
+                            {isAdmin && (
+                              <NavLink
+                                to="/admin/users"
+                                className={({ isActive }) =>
+                                  cn(
+                                    isActive ? 'text-brand' : 'text-primary',
+                                    'hover:text-brand transition-colors duration-200 ease-linear',
+                                  )
+                                }
+                              >
+                                <span className="text-sm xl:text-lg">
+                                  Admin Dashboard
+                                </span>
+                              </NavLink>
+                            )}
                             {isAuthenticated ? (
                               <>
                                 <NavLink

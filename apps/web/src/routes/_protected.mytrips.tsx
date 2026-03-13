@@ -28,6 +28,7 @@ import {
 } from '../components/ui/alert-dialog'
 import { toast } from 'sonner'
 import { apiClient } from '../lib/api-client'
+import { Loader2 } from 'lucide-react'
 
 export default function MyTrips() {
   const { mutate } = useSWRConfig()
@@ -114,10 +115,16 @@ export default function MyTrips() {
                     return (
                       <TableRow
                         key={item.id || index}
-                        className="flex flex-col xl:table-row border border-[#0000001A] mb-6 xl:mb-0   xl:p-0 xl:pb-5 shadow-sm xl:shadow-none"
+                        className="flex flex-col xl:table-row mb-6 xl:mb-0   xl:p-0 xl:pb-5 shadow-sm xl:shadow-none"
                       >
-                        <TableCell className="block xl:table-cell font-medium pb-5 xl:pb-0 border-b border-gray-100 xl:border-none">
+                        <TableCell className="block xl:table-cell font-medium py-5 border-b border-gray-100 xl:border-none">
                           <div className="flex flex-col sm:flex-row xl:flex-row items-center sm:items-start xl:items-center gap-4 xl:gap-5 text-center sm:text-left">
+                            {!trip?.media?.media_details?.sizes?.full
+                              ?.source_url && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <Loader2 className="w-6 h-6 animate-spin text-gray-300" />
+                              </div>
+                            )}
                             <img
                               src={
                                 trip?.media?.media_details?.sizes?.full
@@ -189,7 +196,12 @@ export default function MyTrips() {
                         <TableCell className="block xl:table-cell pt-4 xl:pt-0 text-center text-[#C0C0C0] text-base xl:text-lg cursor-pointer">
                           {item.bookingStatus !== 'CANCELLED' ? (
                             <AlertDialog>
-                              <AlertDialogTrigger className="hover:text-red-500 cursor-pointer transition-colors">
+                              <AlertDialogTrigger
+                                disabled={dayjs(group?.arriving_date).isBefore(
+                                  dayjs(),
+                                )}
+                                className="disabled:text-gray-400 disabled:cursor-not-allowed hover:text-red-500 disabled:hover:text-gray-400 cursor-pointer transition-colors"
+                              >
                                 {isCancelling === item.id
                                   ? 'Cancelling...'
                                   : 'Cancel Trip'}

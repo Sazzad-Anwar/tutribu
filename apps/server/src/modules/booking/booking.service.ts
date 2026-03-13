@@ -453,7 +453,11 @@ export async function removePromotionalCodeFromBooking(
  * - Refunds 70% of the amountPaid
  * - Updates booking and payment statuses
  */
-export async function cancelBooking(bookingId: string, userId: string) {
+export async function cancelBooking(
+  bookingId: string,
+  userId?: string | null,
+  isAdmin = false,
+) {
   if (!bookingId) {
     throw status(400, { message: 'bookingId is required' })
   }
@@ -467,7 +471,7 @@ export async function cancelBooking(bookingId: string, userId: string) {
     throw status(404, { message: 'Booking not found' })
   }
 
-  if (booking.userInfo.userId !== userId) {
+  if (!isAdmin && booking.userInfo.userId !== userId) {
     throw status(403, { message: 'Forbidden' })
   }
 

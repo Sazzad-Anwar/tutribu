@@ -38,9 +38,13 @@ export const SignUpSchema = BaseSignUpSchema.superRefine(
   },
 )
 
+export const UserRoleSchema = z.enum(['USER', 'ADMIN'])
+
 export const UserSchema = BaseSignUpSchema.extend({
   id: z.cuid(),
   authProvider: z.enum(['PASSWORD', 'GOOGLE']).default('PASSWORD'),
+  role: UserRoleSchema.default('USER'),
+  isSuspended: z.boolean().default(false),
 }).omit({ password: true })
 export const SignInSchema = BaseSignUpSchema.pick({
   email: true,

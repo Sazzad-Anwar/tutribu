@@ -28,7 +28,7 @@ import { useGoogleLogin } from '@react-oauth/google'
 
 export default function SignInPage() {
   const navigate = useNavigate()
-  const { isAuthenticated, checkAuth } = useAuth()
+  const { isAuthenticated, isAdmin, checkAuth } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const form = useForm({
@@ -45,8 +45,12 @@ export default function SignInPage() {
         setIsLoading(true)
         await authClient.signInWithGoogle(tokenResponse.access_token)
         toast.success('Signed in with Google successfully')
-        await checkAuth()
-        navigate('/')
+        const user = await checkAuth()
+        if (user?.role === 'ADMIN') {
+          navigate('/admin/bookings')
+        } else {
+          navigate('/')
+        }
       } catch (error) {
         toast.error(
           error instanceof Error
@@ -68,8 +72,12 @@ export default function SignInPage() {
     try {
       await authClient.signIn(data)
       toast.success('Signed in successfully')
-      await checkAuth()
-      navigate('/')
+      const user = await checkAuth()
+      if (user?.role === 'ADMIN') {
+        navigate('/admin/bookings')
+      } else {
+        navigate('/')
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to sign in')
     } finally {
@@ -79,9 +87,13 @@ export default function SignInPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/')
+      if (isAdmin) {
+        navigate('/admin/bookings')
+      } else {
+        navigate('/')
+      }
     }
-  }, [isAuthenticated, navigate])
+  }, [isAuthenticated, isAdmin, navigate])
 
   return (
     <section

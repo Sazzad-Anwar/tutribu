@@ -3,6 +3,11 @@ enum AuthProvider {
   GOOGLE
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 enum UserType {
   SELF
   GUEST
@@ -15,6 +20,8 @@ model User {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   authProvider        AuthProvider         @default(PASSWORD)
+  role                UserRole             @default(USER)
+  isSuspended         Boolean              @default(false)
   customerId          String?
   avatarUrl           String?
   refreshTokens       RefreshToken[]
@@ -23,6 +30,7 @@ model User {
 
   @@index([createdAt])
   @@index([customerId])
+  @@index([role])
 }
 
 model UserInfo {

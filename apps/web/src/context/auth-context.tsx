@@ -5,8 +5,9 @@ import { axios } from '../lib/utils'
 interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
+  isAdmin: boolean
   isLoading: boolean
-  checkAuth: () => Promise<void>
+  checkAuth: () => Promise<User | null>
   logout: () => Promise<void>
   setUser: (user: User | null) => void
 }
@@ -17,14 +18,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  console.log('inside from auth provider')
 
-  const checkAuth = async () => {
+  const checkAuth = async (): Promise<User | null> => {
     try {
       const { data } = await axios.get<User>('/api/auth/me')
       setUser(data)
+      return data
     } catch (error) {
       setUser(null)
+      return null
     } finally {
       setIsLoading(false)
     }
@@ -48,6 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         isAuthenticated: !!user,
+        isAdmin: user?.role === 'ADMIN',
         isLoading,
         checkAuth,
         logout,

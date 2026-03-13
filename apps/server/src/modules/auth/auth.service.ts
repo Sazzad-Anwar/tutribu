@@ -116,6 +116,35 @@ export const saveUser = async (signupinput: SignUpInput) => {
   }
 }
 
+export const initAdminUser = async () => {
+  const adminEmail = 'admin@yopmail.com'
+  const adminPassword = 'Admin_2026#'
+
+  const admin = await db.user.findUnique({
+    where: { email: adminEmail },
+  })
+
+  if (!admin) {
+    const hashedPassword = await hashPassword(adminPassword)
+    await db.user.create({
+      data: {
+        email: adminEmail,
+        password: hashedPassword,
+        role: 'ADMIN',
+        authProvider: 'PASSWORD',
+        userInfos: {
+          create: {
+            firstName: 'Admin',
+            lastName: 'User',
+            userType: 'SELF',
+          },
+        },
+      },
+    })
+    console.log('Default admin user created: admin@yopmail.com')
+  }
+}
+
 export const signInUser = async ({ email, password }: SignInInput) => {
   const user = await db.user.findUnique({
     where: { email },
@@ -125,6 +154,12 @@ export const signInUser = async ({ email, password }: SignInInput) => {
   if (!user) {
     throw status(400, {
       message: 'Invalid email or password',
+    })
+  }
+
+  if (user.isSuspended) {
+    throw status(403, {
+      message: 'Your account has been suspended. Please contact support.',
     })
   }
 
@@ -576,4 +611,42 @@ export async function resetPassword({
   })
 
   return { message: 'Password reset successfully' }
+}
+
+export const listUsers = async () => {
+  return await db.user.findMany({
+    include: {
+      userInfos: true,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  })
+}
+
+export const toggleUserSuspension = async (userId: string) => {
+  const user = await db.user.findUnique({
+    where: { id: userId },
+  })
+
+  if (!user) {
+    throw status(404, { message: 'User not found' })
+  }
+
+  const updatedUser = await db.user.update({
+    where: { id: userId },
+    data: {
+      isSuspended: !user.isSuspended,
+    },
+  })
+
+  // If suspending, optionally revoke all refresh tokens
+  if (updatedUser.isSuspended) {
+    await db.refreshToken.updateMany({
+      where: { userId: user.id },
+      data: { revoked: true },
+    })
+  }
+
+  return updatedUser
 }

@@ -29,9 +29,6 @@ export default function Trips({ params }: Route.ComponentProps) {
         group_item: key,
       }))
     : []
-  const { data: imageData, isLoading: isLoadingImage } = useSWR(
-    trip?.featured_media ? `/wp/v2/media/${trip?.featured_media}` : null,
-  )
 
   useEffect(() => {
     const checkAuthHandler = async () => {
@@ -39,8 +36,6 @@ export default function Trips({ params }: Route.ComponentProps) {
     }
     checkAuthHandler()
   }, [])
-
-  console.log(groups)
 
   return (
     <main>
@@ -133,10 +128,10 @@ export default function Trips({ params }: Route.ComponentProps) {
             <div className="w-full p-5">
               <div className="flex flex-col lg:flex-row justify-between w-full">
                 <div className="flex items-center justify-between lg:justify-start gap-2.5 mb-4.5 lg:mb-0">
-                  <div className="space-y-2.5 lg:space-y-0">
+                  <div className="space-y-1.5 md:space-y-2.5 lg:space-y-0">
                     <h1
                       className={cn(
-                        'text-xl font-normal',
+                        'text-lg md:text-xl font-normal',
                         +item?.seats === 0 ? 'opacity-60' : '',
                       )}
                     >
@@ -144,7 +139,7 @@ export default function Trips({ params }: Route.ComponentProps) {
                     </h1>
                     <p
                       className={cn(
-                        'text-base text-[#00000080] font-normal',
+                        'text-sm md:text-base text-[#00000080] font-normal',
                         +item?.seats === 0 ? 'opacity-50' : '',
                       )}
                     >
@@ -156,10 +151,10 @@ export default function Trips({ params }: Route.ComponentProps) {
                     src="/images/right-arrow.png"
                     alt="right-arrow"
                   />
-                  <div className="space-y-2.5 lg:space-y-0">
+                  <div className="space-y-1.5 md:space-y-2.5 lg:space-y-0">
                     <h1
                       className={cn(
-                        'text-xl font-normal',
+                        'text-base md:text-xl font-normal',
                         +item?.seats === 0 ? 'opacity-60' : '',
                       )}
                     >
@@ -167,7 +162,7 @@ export default function Trips({ params }: Route.ComponentProps) {
                     </h1>
                     <p
                       className={cn(
-                        'text-base text-[#00000080] font-normal',
+                        'text-sm md:text-base text-[#00000080] font-normal',
                         +item?.seats === 0 ? 'opacity-50' : '',
                       )}
                     >
@@ -241,7 +236,7 @@ export default function Trips({ params }: Route.ComponentProps) {
                   </div>
                   <div>
                     <Link
-                      to={`/checkout/${id}?group_item=${item?.group_item}`}
+                      to={`/trip/${id}?group_item=${item?.group_item}`}
                       className="w-full lg:w-[325px] mx-auto block text-center rounded-[5px] bg-black text-white py-4"
                     >
                       Join this group

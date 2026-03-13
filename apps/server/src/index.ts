@@ -6,6 +6,13 @@ import { staticPlugin } from '@elysiajs/static'
 import { AuthModule } from './modules/auth'
 import { BookingModule } from './modules/booking'
 import { UserInfoModule } from './modules/user-info'
+import { AdminModule } from './modules/admin'
+import { initAdminUser } from './modules/auth/auth.service'
+
+// Initialize Admin User
+initAdminUser().catch((err) => {
+  console.error('Failed to initialize admin user:', err)
+})
 
 new Elysia()
   .use(
@@ -59,6 +66,7 @@ new Elysia()
   .use(AuthModule)
   .use(BookingModule)
   .use(UserInfoModule)
+  .use(AdminModule)
   .listen(3001, () => {
     console.log('Server is running on http://localhost:3001')
   })
