@@ -294,7 +294,7 @@ function CheckoutInner() {
         paymentStatus: 'PENDING',
         paymentPlan: formData.depositType as CreateBookingInput['paymentPlan'],
         totalAmount: totalAmount,
-        groupId: 'safsdfsdd',
+        groupId: groupItem || '',
         checkingType:
           query.bookingFor as string as CreateBookingInput['checkingType'],
         paymentMethodId: paymentMethodIdToUse,

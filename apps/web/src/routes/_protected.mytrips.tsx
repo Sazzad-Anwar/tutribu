@@ -14,7 +14,7 @@ import { bookingClient } from '../lib/booking-client'
 import useSWR, { useSWRConfig } from 'swr'
 import { cn } from '../lib/utils'
 import { type Booking } from '@tutribu/types'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,11 +27,27 @@ import {
   AlertDialogTrigger,
 } from '../components/ui/alert-dialog'
 import { toast } from 'sonner'
+import { apiClient } from '../lib/api-client'
 
 export default function MyTrips() {
   const { mutate } = useSWRConfig()
   const { data } = useSWR<Booking[]>('bookings', bookingClient.list)
+  const [trips, setTrips] = useState<any[]>([])
   const [isCancelling, setIsCancelling] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchTrips = async (id: number) => {
+      const { data } = await apiClient.get(`/wp/v2/trips/${id}`)
+      const { data: media } = await apiClient.get(
+        `/wp/v2/media/${data?.featured_media}`,
+      )
+      setTrips((prev) => [...prev, { ...data, media }])
+    }
+
+    data?.forEach(async (item) => {
+      await fetchTrips(item.tripId)
+    })
+  }, [data])
 
   const handleCancel = async (id: string) => {
     try {
@@ -91,129 +107,140 @@ export default function MyTrips() {
             ) : (
               <Table className="block xl:table w-full">
                 <TableBody className="block xl:table-row-group">
-                  {data?.map((item: any, index: number) => (
-                    <TableRow
-                      key={item.id || index}
-                      className="flex flex-col xl:table-row border border-[#0000001A] mb-6 xl:mb-0   xl:p-0 xl:pb-5 shadow-sm xl:shadow-none"
-                    >
-                      <TableCell className="block xl:table-cell font-medium pb-5 xl:pb-0 border-b border-gray-100 xl:border-none">
-                        <div className="flex flex-col sm:flex-row xl:flex-row items-center sm:items-start xl:items-center gap-4 xl:gap-5 text-center sm:text-left">
-                          <img
-                            src="/images/trip-image.png"
-                            alt="trip-image"
-                            className="h-40 w-full sm:w-40 xl:h-25 xl:w-25 rounded-[10px] object-cover"
-                          />
-                          <div className="space-y-2 sm:space-y-0 xl:space-y-1">
-                            <h1 className="text-2xl xl:text-[32px]">
-                              Trip to Ibiza
-                            </h1>
-                            <p className="text-base xl:text-lg text-gray-500 xl:text-black">
-                              {dayjs().format('DD MMM YYYY')}
+                  {data?.map((item: any, index: number) => {
+                    const trip = trips?.find((trip) => item.tripId === trip.id)
+                    const group = trip?.meta?.group_item[item.groupId]
+                    console.log(group)
+                    return (
+                      <TableRow
+                        key={item.id || index}
+                        className="flex flex-col xl:table-row border border-[#0000001A] mb-6 xl:mb-0   xl:p-0 xl:pb-5 shadow-sm xl:shadow-none"
+                      >
+                        <TableCell className="block xl:table-cell font-medium pb-5 xl:pb-0 border-b border-gray-100 xl:border-none">
+                          <div className="flex flex-col sm:flex-row xl:flex-row items-center sm:items-start xl:items-center gap-4 xl:gap-5 text-center sm:text-left">
+                            <img
+                              src={
+                                trip?.media?.media_details?.sizes?.full
+                                  ?.source_url
+                              }
+                              alt="trip-image"
+                              className="h-40 w-full sm:w-40 xl:h-25 xl:w-25 rounded-[10px] object-cover"
+                            />
+                            <div className="space-y-2 sm:space-y-0 xl:space-y-1">
+                              <h1 className="text-2xl xl:text-[32px]">
+                                {trip?.title?.rendered}
+                              </h1>
+                              <p className="text-base xl:text-lg text-gray-500 xl:text-black">
+                                {dayjs(group?.arriving_date).format(
+                                  'DD MMM YYYY',
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="block xl:table-cell py-4 xl:py-0 border-b border-gray-100 xl:border-none">
+                          <div className="flex xl:flex-col justify-between xl:justify-start items-center xl:items-start xl:space-y-4.5">
+                            <p className="text-lg xl:text-xl font-medium xl:font-normal">
+                              Traveler
+                            </p>
+                            <p className="text-base xl:text-lg">
+                              2 Adults and 1 Kid
                             </p>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="block xl:table-cell py-4 xl:py-0 border-b border-gray-100 xl:border-none">
-                        <div className="flex xl:flex-col justify-between xl:justify-start items-center xl:items-start xl:space-y-4.5">
-                          <p className="text-lg xl:text-xl font-medium xl:font-normal">
-                            Traveler
-                          </p>
-                          <p className="text-base xl:text-lg">
-                            2 Adults and 1 Kid
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="block xl:table-cell py-4 xl:py-0 border-b border-gray-100 xl:border-none">
-                        <div className="flex xl:flex-col justify-between xl:justify-start xl:items-center space-y-0 xl:space-y-2.5">
-                          <p className="text-lg xl:text-xl font-medium xl:font-normal">
-                            Payment Status
-                          </p>
-                          <div
-                            className={cn(
-                              item.paymentStatus === 'COMPLETED'
-                                ? 'bg-[#00AEEF]'
-                                : 'bg-[#EFCB00]',
-                              'py-2 xl:py-4 w-auto px-6 xl:px-10 rounded-[5px] text-white',
-                            )}
-                          >
-                            <p className="text-sm xl:text-lg">
-                              {item.paymentStatus}
+                        </TableCell>
+                        <TableCell className="block xl:table-cell py-4 xl:py-0 border-b border-gray-100 xl:border-none">
+                          <div className="flex xl:flex-col justify-between xl:justify-start xl:items-center space-y-0 xl:space-y-2.5">
+                            <p className="text-lg xl:text-xl font-medium xl:font-normal">
+                              Payment Status
                             </p>
+                            <div
+                              className={cn(
+                                item.paymentStatus === 'COMPLETED'
+                                  ? 'bg-[#00AEEF]'
+                                  : 'bg-[#EFCB00]',
+                                'py-2 xl:py-4 w-auto px-6 xl:px-10 rounded-[5px] text-white',
+                              )}
+                            >
+                              <p className="text-sm xl:text-lg">
+                                {item.paymentStatus}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="block xl:table-cell py-4 xl:py-0 border-b border-gray-100 xl:border-none">
-                        <div className="flex xl:flex-col justify-between xl:justify-start xl:items-center space-y-0 xl:space-y-2.5">
-                          <p className="text-lg xl:text-xl font-medium xl:font-normal">
-                            Booking Status
-                          </p>
-                          <div
-                            className={cn(
-                              item.bookingStatus === 'CONFIRMED'
-                                ? 'bg-[#00AEEF]'
-                                : 'bg-[#EFCB00]',
-                              'py-2 xl:py-4 w-auto px-6 xl:px-10 rounded-[5px] text-white',
-                            )}
-                          >
-                            <p className="text-sm xl:text-lg">
-                              {item.bookingStatus}
+                        </TableCell>
+                        <TableCell className="block xl:table-cell py-4 xl:py-0 border-b border-gray-100 xl:border-none">
+                          <div className="flex xl:flex-col justify-between xl:justify-start xl:items-center space-y-0 xl:space-y-2.5">
+                            <p className="text-lg xl:text-xl font-medium xl:font-normal">
+                              Booking Status
                             </p>
+                            <div
+                              className={cn(
+                                item.bookingStatus === 'CONFIRMED'
+                                  ? 'bg-[#00AEEF]'
+                                  : 'bg-[#EFCB00]',
+                                'py-2 xl:py-4 w-auto px-6 xl:px-10 rounded-[5px] text-white',
+                              )}
+                            >
+                              <p className="text-sm xl:text-lg">
+                                {item.bookingStatus}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="block xl:table-cell pt-4 xl:pt-0 text-center text-[#C0C0C0] text-base xl:text-lg cursor-pointer">
-                        {item.bookingStatus !== 'CANCELLED' ? (
-                          <AlertDialog>
-                            <AlertDialogTrigger className="hover:text-red-500 cursor-pointer transition-colors">
-                              {isCancelling === item.id
-                                ? 'Cancelling...'
-                                : 'Cancel Trip'}
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="rounded-xl p-8 data-[size=default]:sm:max-w-lg">
-                              <AlertDialogHeader className="space-y-4">
-                                <AlertDialogTitle className="space-y-4 text-base lg:text-xl">
-                                  <img
-                                    src="/images/logo.svg"
-                                    alt="Logo"
-                                    className="h-9 w-28 lg:h-12 lg:w-[162px] xl:h-16 xl:w-[182px]"
-                                    height={64}
-                                    width={182}
-                                  />
-                                  <span className="font-semibold text-base md:text-2xl">
-                                    Are you absolutely sure?
-                                  </span>
-                                </AlertDialogTitle>
-                                <AlertDialogDescription className="text-base xl:text-lg">
-                                  This action cannot be undone. This will
-                                  permanently cancel your trip to Ibiza. Please
-                                  note that{' '}
-                                  <strong>
-                                    only 70% of the paid amount will be refunded
-                                  </strong>{' '}
-                                  to your original payment method.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel className="bg-brand mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg">
-                                  Keep Trip
-                                </AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleCancel(item.id)}
-                                  className="bg-red-500 mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg"
-                                >
-                                  Cancel Trip
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        ) : (
-                          <span className="text-gray-400 cursor-not-allowed">
-                            Cancelled
-                          </span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell className="block xl:table-cell pt-4 xl:pt-0 text-center text-[#C0C0C0] text-base xl:text-lg cursor-pointer">
+                          {item.bookingStatus !== 'CANCELLED' ? (
+                            <AlertDialog>
+                              <AlertDialogTrigger className="hover:text-red-500 cursor-pointer transition-colors">
+                                {isCancelling === item.id
+                                  ? 'Cancelling...'
+                                  : 'Cancel Trip'}
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="rounded-xl p-8 data-[size=default]:sm:max-w-lg">
+                                <AlertDialogHeader className="space-y-4">
+                                  <AlertDialogTitle className="space-y-4 text-base lg:text-xl">
+                                    <img
+                                      src="/images/logo.svg"
+                                      alt="Logo"
+                                      className="h-9 w-28 lg:h-12 lg:w-[162px] xl:h-16 xl:w-[182px]"
+                                      height={64}
+                                      width={182}
+                                    />
+                                    <span className="font-semibold text-base md:text-2xl">
+                                      Are you absolutely sure?
+                                    </span>
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-base xl:text-lg">
+                                    This action cannot be undone. This will
+                                    permanently cancel your trip to Ibiza.
+                                    Please note that{' '}
+                                    <strong>
+                                      only 70% of the paid amount will be
+                                      refunded
+                                    </strong>{' '}
+                                    to your original payment method.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="bg-brand mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg">
+                                    Keep Trip
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleCancel(item.id)}
+                                    className="bg-red-500 mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg"
+                                  >
+                                    Cancel Trip
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          ) : (
+                            <span className="text-gray-400 cursor-not-allowed">
+                              Cancelled
+                            </span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
             )}
