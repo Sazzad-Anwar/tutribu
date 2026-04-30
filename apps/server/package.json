@@ -3,6 +3,7 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
+    "email": "email dev --dir src/modules/emails --port 3003",
     "build": "tsdown",
     "check-types": "tsc -b",
     "compile": "bun build --compile --minify --sourcemap --bytecode ./src/index.ts --outfile server",
@@ -15,7 +16,7 @@
     "@elysiajs/openapi": "^1.4.13",
     "@elysiajs/static": "^1.4.7",
     "@prisma/client": "^7.4.1",
-    "@react-email/components": "^1.0.8",
+    "@react-email/components": "^1.0.10",
     "@react-email/render": "^2.0.4",
     "@tutribu/db": "workspace:*",
     "@tutribu/env": "workspace:*",
@@ -33,11 +34,13 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@react-email/preview-server": "5.2.10",
     "@tutribu/config": "workspace:*",
     "@types/bun": "catalog:",
     "@types/nodemailer": "^7.0.11",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "react-email": "^5.2.10",
     "tsdown": "^0.16.5",
     "typescript": "^5"
   }

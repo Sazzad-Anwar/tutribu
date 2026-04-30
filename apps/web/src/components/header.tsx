@@ -22,6 +22,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from './ui/sheet'
+import { TripCalendarPopup } from './trip-calendar-popup'
 
 export default function Header() {
   const navigate = useNavigate()
@@ -110,17 +111,7 @@ export default function Header() {
                     </>
                   ) : (
                     <div className="flex items-center gap-2 2xl:gap-5">
-                      <Button
-                        variant="link"
-                        size="icon-xs"
-                        className="px-0 py-0 m-0 size-6 xl:size-8 border-0 ring-0"
-                      >
-                        <img
-                          src="/images/calendar-icon.svg"
-                          className="size-6 xl:size-8"
-                          alt="Calendar"
-                        />
-                      </Button>
+                      <TripCalendarPopup />
                       <Button
                         variant="link"
                         size="icon-xs"

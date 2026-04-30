@@ -206,6 +206,12 @@ export const googleAuth = async ({ token }: { token: string }) => {
     include: { refreshTokens: true },
   })
 
+  if (user?.isSuspended) {
+    throw status(403, {
+      message: 'Your account has been suspended. Please contact support.',
+    })
+  }
+
   if (!user) {
     const randomPassword = crypto.randomUUID()
     const hashedPassword = await hashPassword(randomPassword)

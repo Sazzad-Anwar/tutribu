@@ -12,6 +12,7 @@ import {
   Calendar,
   UserMinus,
   UserCheck,
+  KeyRound,
 } from 'lucide-react'
 import dayjs from 'dayjs'
 import {
@@ -34,6 +35,15 @@ export default function AdminUsers() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState<string | null>(null)
+
+  // Password Change State
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false)
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  })
+  const [isChangingPassword, setIsChangingPassword] = useState(false)
 
   useEffect(() => {
     if (!authLoading && !isAdmin) {
@@ -71,6 +81,37 @@ export default function AdminUsers() {
       toast.error('Failed to update user status')
     } finally {
       setIsUpdating(null)
+    }
+  }
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error('New passwords do not match')
+      return
+    }
+    if (passwordForm.newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters long')
+      return
+    }
+
+    try {
+      setIsChangingPassword(true)
+      await axios.post('/api/auth/change-password', {
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      })
+      toast.success('Password changed successfully')
+      setIsPasswordModalOpen(false)
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      })
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to change password')
+    } finally {
+      setIsChangingPassword(false)
     }
   }
 
@@ -183,9 +224,110 @@ export default function AdminUsers() {
                     {/* Action Footer */}
                     <div className="mt-8 pt-6 border-t border-gray-50">
                       {user.role === 'ADMIN' ? (
-                        <p className="text-center text-xs text-gray-400 font-medium bg-gray-50 py-2 rounded-lg">
-                          Admin roles cannot be suspended
-                        </p>
+                        <AlertDialog
+                          open={isPasswordModalOpen}
+                          onOpenChange={setIsPasswordModalOpen}
+                        >
+                          <AlertDialogTrigger className="w-full h-12 rounded-xl text-base font-medium transition-all gap-2 inline-flex items-center justify-center bg-[#00AEEF]/5 text-[#00AEEF] hover:bg-[#00AEEF] hover:text-white">
+                            <KeyRound className="w-4 h-4" />
+                            Change Password
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-2xl p-8 data-[size=default]:sm:max-w-lg">
+                            <form onSubmit={handlePasswordChange}>
+                              <AlertDialogHeader className="space-y-4">
+                                <AlertDialogTitle className="flex flex-col gap-4 text-2xl font-tinos">
+                                  <img
+                                    src="/images/logo.svg"
+                                    alt="Logo"
+                                    className="h-10 w-auto self-start"
+                                  />
+                                  Change Admin Password
+                                </AlertDialogTitle>
+                                <div className="text-base text-gray-600 space-y-4 pt-4 w-full">
+                                  <div className="space-y-2 w-full">
+                                    <label className="text-sm font-medium text-gray-900">
+                                      Current Password
+                                    </label>
+                                    <input
+                                      type="password"
+                                      required
+                                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#00AEEF] focus:ring-1 focus:ring-[#00AEEF] outline-none transition-all"
+                                      value={passwordForm.currentPassword}
+                                      onChange={(e) =>
+                                        setPasswordForm((prev) => ({
+                                          ...prev,
+                                          currentPassword: e.target.value,
+                                        }))
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-900">
+                                      New Password
+                                    </label>
+                                    <input
+                                      type="password"
+                                      required
+                                      minLength={8}
+                                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#00AEEF] focus:ring-1 focus:ring-[#00AEEF] outline-none transition-all"
+                                      value={passwordForm.newPassword}
+                                      onChange={(e) =>
+                                        setPasswordForm((prev) => ({
+                                          ...prev,
+                                          newPassword: e.target.value,
+                                        }))
+                                      }
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-900">
+                                      Confirm New Password
+                                    </label>
+                                    <input
+                                      type="password"
+                                      required
+                                      minLength={8}
+                                      className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#00AEEF] focus:ring-1 focus:ring-[#00AEEF] outline-none transition-all"
+                                      value={passwordForm.confirmPassword}
+                                      onChange={(e) =>
+                                        setPasswordForm((prev) => ({
+                                          ...prev,
+                                          confirmPassword: e.target.value,
+                                        }))
+                                      }
+                                    />
+                                  </div>
+                                </div>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter className="mt-8 gap-4">
+                                <AlertDialogCancel
+                                  type="button"
+                                  className="h-14 rounded-xl text-lg flex-1 border-gray-200"
+                                  onClick={() => {
+                                    setPasswordForm({
+                                      currentPassword: '',
+                                      newPassword: '',
+                                      confirmPassword: '',
+                                    })
+                                  }}
+                                >
+                                  Cancel
+                                </AlertDialogCancel>
+                                <Button
+                                  type="submit"
+                                  disabled={isChangingPassword}
+                                  className="h-14 rounded-xl text-lg flex-1 text-white bg-[#00AEEF] hover:bg-[#009EDF]"
+                                >
+                                  {isChangingPassword ? (
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                  ) : (
+                                    'Update Password'
+                                  )}
+                                </Button>
+                              </AlertDialogFooter>
+                            </form>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       ) : (
                         <AlertDialog>
                           <AlertDialogTrigger

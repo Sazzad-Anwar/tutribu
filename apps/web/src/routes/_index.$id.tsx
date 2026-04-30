@@ -100,13 +100,13 @@ export default function Trips({ params }: Route.ComponentProps) {
           </div> */}
         </div>
         <div className="mt-4 lg:mt-12.5 w-full px-5 lg:px-7.5 py-2.5 lg:py-2.5 bg-[#F2FBFE] flex flex-col lg:flex-row justify-between items-center">
-          <div className="space-y-8.5 lg:space-x-2.5 flex flex-col lg:flex-row items-center">
+          <div className="space-y-8.5 lg:space-y-0 lg:space-x-2.5 flex flex-col lg:flex-row items-center">
             <img
               src="/images/people-group.png"
               alt="people-group"
               className="w-[288px] lg:w-[230px] h-[100px] lg:h-20"
             />
-            <div className="space-y-5 lg:-space-y-2.5 text-center">
+            <div className="space-y-5 lg:-space-y-2.5 text-center lg:text-left">
               <h1 className="text-[32px]">
                 Got questions? <br className="block lg:hidden" /> We’re here to
                 help.
