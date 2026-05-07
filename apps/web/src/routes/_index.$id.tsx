@@ -9,6 +9,7 @@ import { Link } from 'react-router'
 import dayjs from 'dayjs'
 import { ChevronLeft, Info } from 'lucide-react'
 import { cn } from '../lib/utils'
+import { useTranslation } from 'react-i18next'
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -20,6 +21,7 @@ export function meta({}: Route.MetaArgs) {
 export default function Trips({ params }: Route.ComponentProps) {
   const { id } = params
   const { checkAuth } = useAuth()
+  const { t } = useTranslation()
   const [imageLoaded, setImageLoaded] = useState(false)
   const { data, isLoading } = useSWR(`/wp/v2/trips/?slug=${id}`)
   const trip = data?.[0]
@@ -46,7 +48,7 @@ export default function Trips({ params }: Route.ComponentProps) {
           className="flex items-center gap-1"
         >
           <ChevronLeft />
-          <span className="text-xl font-normal">Back</span>
+          <span className="text-xl font-normal">{t('tripDetail.back')}</span>
         </Link>
         <div className="flex justify-between items-start">
           <div>
@@ -72,21 +74,27 @@ export default function Trips({ params }: Route.ComponentProps) {
                   src="/images/calendar-icon.svg"
                   className="h-4 w-4 lg:h-7.5 lg:w-6.5"
                 />
-                <span className="text-base lg:text-xl">When ?</span>
+                <span className="text-base lg:text-xl">
+                  {t('tripDetail.when')}
+                </span>
               </div>
               <div className="p-2.5 rounded-[10px] border lg:text-sm xl:text-xl font-normal flex items-center gap-2.5">
                 <img
                   src="/images/key.svg"
                   className="h-4 w-4 lg:h-6 lg:w-6"
                 />
-                <span className="text-base lg:text-xl">Room Options</span>
+                <span className="text-base lg:text-xl">
+                  {t('tripDetail.roomOptions')}
+                </span>
               </div>
               <div className="p-2.5 rounded-[10px] border lg:text-sm xl:text-xl font-normal flex items-center gap-2.5">
                 <img
                   src="/images/on-sale-icon.svg"
                   className="h-4 w-4 lg:h-6 lg:w-6"
                 />
-                <span className="text-base lg:text-xl">On Sale</span>
+                <span className="text-base lg:text-xl">
+                  {t('tripDetail.onSale')}
+                </span>
               </div>
             </div>
           </div>
@@ -104,26 +112,26 @@ export default function Trips({ params }: Route.ComponentProps) {
             <img
               src="/images/people-group.png"
               alt="people-group"
-              className="w-[288px] lg:w-[230px] h-[100px] lg:h-20"
+              className="w-[288px] lg:w-57.5 h-25 lg:h-20"
             />
             <div className="space-y-5 lg:-space-y-2.5 text-center lg:text-left">
               <h1 className="text-[32px]">
-                Got questions? <br className="block lg:hidden" /> We’re here to
-                help.
+                {t('tripDetail.questionsTitle')}{' '}
+                <br className="block lg:hidden" />
               </h1>
               <p className="text-[18px] lg:text-2xl">
-                Meet people who get where you are in life.
+                {t('tripDetail.questionsSubtitle')}
               </p>
             </div>
           </div>
           <button className="mt-11 w-full md:w-auto lg:mt-0 p-4 rounded-[10px] text-xl border text-white bg-black border-[#00000033]">
-            Call: (331) 214-3422
+            {t('tripDetail.callCta')}
           </button>
         </div>
         {groups?.map((item: any) => (
           <div
             key={'group-' + item?.group_item}
-            className="mt-12.5 border border-[#0000004D] rounded-[15px] lg:rounded-[20px] flex flex-col lg:flex-row justify-between items-center"
+            className="mt-12.5 border border-[#0000004D] rounded-[15px] lg:rounded-4xl flex flex-col lg:flex-row justify-between items-center"
           >
             <div className="w-full p-5">
               <div className="flex flex-col lg:flex-row justify-between w-full">
@@ -143,7 +151,7 @@ export default function Trips({ params }: Route.ComponentProps) {
                         +item?.seats === 0 ? 'opacity-50' : '',
                       )}
                     >
-                      We are arriving
+                      {t('tripDetail.weAreArriving')}
                     </p>
                   </div>
                   <img
@@ -166,7 +174,9 @@ export default function Trips({ params }: Route.ComponentProps) {
                         +item?.seats === 0 ? 'opacity-50' : '',
                       )}
                     >
-                      Depart on {dayjs(item?.depart_date).format('dddd')}
+                      {t('tripDetail.departOn', {
+                        day: dayjs(item?.depart_date).format('dddd'),
+                      })}
                     </p>
                   </div>
                 </div>
@@ -179,7 +189,9 @@ export default function Trips({ params }: Route.ComponentProps) {
                   )}
                 >
                   <p className="text-base">
-                    {+item?.seats === 0 ? 'Sold out' : 'Closing soon'}
+                    {+item?.seats === 0
+                      ? t('tripDetail.soldOut')
+                      : t('tripDetail.closingSoon')}
                   </p>
                 </div>
               </div>
@@ -198,7 +210,7 @@ export default function Trips({ params }: Route.ComponentProps) {
                     +item?.seats === 0 ? 'opacity-50' : '',
                   )}
                 >
-                  Unlock to see who's going
+                  {t('tripDetail.unlockToSee')}
                 </span>
               </div>
               <div className=" lg:hidden mt-3.5 flex justify-center  items-center gap-2.5">
@@ -229,7 +241,7 @@ export default function Trips({ params }: Route.ComponentProps) {
                       <div className="flex items-center gap-2.5 justify-center">
                         <Info className="text-[#00000080]" />
                         <p className="text-base text-[#00000080]">
-                          Private room on request
+                          {t('tripDetail.privateRoomRequest')}
                         </p>
                       </div>
                     )}
@@ -237,9 +249,9 @@ export default function Trips({ params }: Route.ComponentProps) {
                   <div>
                     <Link
                       to={`/trip/${id}?group_item=${item?.group_item}`}
-                      className="w-full lg:w-[325px] mx-auto block text-center rounded-[5px] bg-black text-white py-4"
+                      className="w-full lg:w-81.25 mx-auto block text-center rounded-[5px] bg-black text-white py-4"
                     >
-                      Join this group
+                      {t('tripDetail.joinGroup')}
                     </Link>
                     <div className=" lg:hidden mt-3.5 flex justify-center  items-center gap-2.5">
                       <img
@@ -266,7 +278,7 @@ export default function Trips({ params }: Route.ComponentProps) {
           </div>
         ))}
 
-        <div className="mt-[100px] mb-[61px] grid grid-cols-1 lg:grid-cols-3 gap-7.5">
+        <div className="mt-25 mb-15.25 grid grid-cols-1 lg:grid-cols-3 gap-7.5">
           <div className="border border-[#0000004D] space-y-2.5 p-5 rounded-[10px]">
             <div className="flex items-center gap-2.5">
               <img
@@ -274,11 +286,10 @@ export default function Trips({ params }: Route.ComponentProps) {
                 alt="key-square"
                 className="size-7.5"
               />
-              <h1 className="text-2xl">Book your trip today</h1>
+              <h1 className="text-2xl">{t('tripDetail.bookYourTrip.title')}</h1>
             </div>
             <p className="text-base lg:text-xl text-[#00000080]">
-              Secure your spot with a deposit of just £200 for tours departing
-              in 90+ days.
+              {t('tripDetail.bookYourTrip.description')}
             </p>
           </div>
           <div className="border border-[#0000004D]  space-y-2.5 p-5 rounded-[10px]">
@@ -288,11 +299,12 @@ export default function Trips({ params }: Route.ComponentProps) {
                 alt="calendar-search-icon"
                 className="size-7.5"
               />
-              <h1 className="text-2xl">Flexible ways to pay</h1>
+              <h1 className="text-2xl">
+                {t('tripDetail.flexiblePayment.title')}
+              </h1>
             </div>
             <p className="text-base lg:text-xl text-[#00000080]">
-              Split your payment into 3 or 6 monthly installments, or pay in
-              full 90 days prior to travel.
+              {t('tripDetail.flexiblePayment.description')}
             </p>
           </div>
           <div className="border border-[#0000004D] p-5 space-y-2.5 rounded-[10px]">
@@ -302,11 +314,10 @@ export default function Trips({ params }: Route.ComponentProps) {
                 alt="verified-check"
                 className="size-7.5"
               />
-              <h1 className="text-2xl">Our Guarantee</h1>
+              <h1 className="text-2xl">{t('tripDetail.guarantee.title')}</h1>
             </div>
             <p className="text-base lg:text-xl text-[#00000080]">
-              If anything under our control doesn’t meet expectations, we’ll
-              make it right for you.
+              {t('tripDetail.guarantee.description')}
             </p>
           </div>
         </div>

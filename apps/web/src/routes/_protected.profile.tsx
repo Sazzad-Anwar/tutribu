@@ -1,9 +1,9 @@
-import { useState, useRef } from 'react'
-import { useNavigate } from 'react-router'
-import Footer from '../components/footer'
-import Header from '../components/header'
-import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'
-import { Button } from '../components/ui/button'
+import { useState, useRef } from "react";
+import { useNavigate } from "react-router";
+import Footer from "../components/footer";
+import Header from "../components/header";
+import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
+import { Button } from "../components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,29 +14,29 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '../components/ui/alert-dialog'
-import { Controller, useForm } from 'react-hook-form'
-import { useAuth } from '../context/auth-context'
+} from "../components/ui/alert-dialog";
+import { Controller, useForm } from "react-hook-form";
+import { useAuth } from "../context/auth-context";
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
-} from '../components/ui/field'
-import { Input } from '../components/ui/input'
+} from "../components/ui/field";
+import { Input } from "../components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../components/ui/select'
-import { DatePickerDialog } from '../components/ui/date-picker'
-import dayjs from 'dayjs'
-import { toast } from 'sonner'
-import { authClient } from '../lib/auth-client'
-import { bookingClient } from '../lib/booking-client'
-import { loadStripe } from '@stripe/stripe-js'
+} from "../components/ui/select";
+import { DatePickerDialog } from "../components/ui/date-picker";
+import dayjs from "dayjs";
+import { toast } from "sonner";
+import { authClient } from "../lib/auth-client";
+import { bookingClient } from "../lib/booking-client";
+import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
   CardNumberElement,
@@ -44,33 +44,35 @@ import {
   CardCvcElement,
   useStripe,
   useElements,
-} from '@stripe/react-stripe-js'
-import { Spinner } from '../components/ui/spinner'
-import useSWR from 'swr'
-import { Trash2 } from 'lucide-react'
+} from "@stripe/react-stripe-js";
+import { Spinner } from "../components/ui/spinner";
+import useSWR from "swr";
+import { Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 function ProfileInner() {
-  const { user, checkAuth, logout } = useAuth()
-  console.log(user)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const navigate = useNavigate()
+  const { user, checkAuth, logout } = useAuth();
+  console.log(user);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const { t } = useTranslation();
 
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
-  const [isDeletingAvatar, setIsDeletingAvatar] = useState(false)
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isDeletingAvatar, setIsDeletingAvatar] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
-  const stripe = useStripe()
-  const elements = useElements()
-  const [isSavingCard, setIsSavingCard] = useState(false)
-  const [isDeletingCardId, setIsDeletingCardId] = useState<string | null>(null)
-  const [nameOnCard, setNameOnCard] = useState('')
+  const stripe = useStripe();
+  const elements = useElements();
+  const [isSavingCard, setIsSavingCard] = useState(false);
+  const [isDeletingCardId, setIsDeletingCardId] = useState<string | null>(null);
+  const [nameOnCard, setNameOnCard] = useState("");
 
-  const { data: savedCards = [], mutate } = useSWR('savedCardsProfile', () =>
+  const { data: savedCards = [], mutate } = useSWR("savedCardsProfile", () =>
     bookingClient.getSavedPaymentMethods(),
-  )
+  );
 
   const form = useForm({
     defaultValues: {
@@ -82,35 +84,35 @@ function ProfileInner() {
       gender: user?.gender,
       dateOfBirth: user?.dateOfBirth,
     },
-  })
+  });
 
   const onSubmit = async (data: any) => {
     try {
       await authClient.updateProfile({
         ...data,
         id: user?.id,
-      })
-      toast.success('Profile updated successfully')
-      setIsEditing(false)
+      });
+      toast.success(t("profile.profileUpdated"));
+      setIsEditing(false);
     } catch (error) {
-      console.log(error)
-      toast.error('Failed to update profile')
+      console.log(error);
+      toast.error(t("profile.profileUpdateFailed"));
     }
-  }
+  };
 
   const handleDeleteAccount = async () => {
     try {
-      setIsDeletingAccount(true)
-      await authClient.deleteAccount()
-      toast.success('Account deleted successfully')
-      await logout()
-      navigate('/')
+      setIsDeletingAccount(true);
+      await authClient.deleteAccount();
+      toast.success(t("profile.accountDeleted"));
+      await logout();
+      navigate("/");
     } catch (error) {
-      console.error(error)
-      toast.error('Failed to delete account')
-      setIsDeletingAccount(false)
+      console.error(error);
+      toast.error(t("profile.accountDeleteFailed"));
+      setIsDeletingAccount(false);
     }
-  }
+  };
 
   return (
     <>
@@ -118,12 +120,14 @@ function ProfileInner() {
       <section className="pt-8 pb-12 xl:pt-24 xl:pb-17.5 px-4 xl:px-0">
         <div className="container mx-auto space-y-9">
           <div className="space-y-3 lg:space-y-6">
-            <p className="font-semibold text-base md:text-2xl">Profile</p>
+            <p className="font-semibold text-base md:text-2xl">
+              {t("profile.title")}
+            </p>
             <div className="flex items-center gap-8 md:gap-12.5">
               <Avatar className="size-19 md:size-50">
                 <AvatarImage
                   src={
-                    user?.avatarUrl?.includes('googleusercontent.com')
+                    user?.avatarUrl?.includes("googleusercontent.com")
                       ? user.avatarUrl
                       : import.meta.env.VITE_API_URL + user?.avatarUrl
                   }
@@ -140,18 +144,18 @@ function ProfileInner() {
                   className="hidden"
                   ref={fileInputRef}
                   onChange={async (e) => {
-                    const file = e.target.files?.[0]
-                    if (!file) return
+                    const file = e.target.files?.[0];
+                    if (!file) return;
                     try {
-                      setIsUploadingAvatar(true)
-                      await authClient.uploadAvatar(file)
-                      await checkAuth()
-                      toast.success('Avatar uploaded successfully')
+                      setIsUploadingAvatar(true);
+                      await authClient.uploadAvatar(file);
+                      await checkAuth();
+                      toast.success(t("profile.avatarUploaded"));
                     } catch (error) {
-                      toast.error('Failed to upload avatar')
+                      toast.error(t("profile.avatarUploadFailed"));
                     } finally {
-                      setIsUploadingAvatar(false)
-                      e.target.value = ''
+                      setIsUploadingAvatar(false);
+                      e.target.value = "";
                     }
                   }}
                 />
@@ -159,16 +163,20 @@ function ProfileInner() {
                   variant="outline"
                   disabled={isUploadingAvatar}
                   onClick={() => fileInputRef.current?.click()}
-                  className="py-3 px-6 md:py-4 md:px-9 rounded-[12px] h-12 md:h-19 text-[#3B6BF6] border-[#3B6BF6] text-base md:text-2xl border-2 hover:bg-[#3B6BF6] font-normal hover:text-white"
+                  className="py-3 px-6 md:py-4 md:px-9 rounded-2xl h-12 md:h-19 text-[#3B6BF6] border-[#3B6BF6] text-base md:text-2xl border-2 hover:bg-[#3B6BF6] font-normal hover:text-white"
                 >
-                  {isUploadingAvatar ? 'Uploading...' : 'Upload new picture'}
+                  {isUploadingAvatar
+                    ? t("profile.uploading")
+                    : t("profile.uploadPicture")}
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger
                     disabled={isDeletingAvatar || !user?.avatarUrl}
-                    className="py-4 px-9 rounded-[12px] h-12 md:h-19 bg-[#F8F8F8] text-base md:text-2xl font-normal transition-colors hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="py-4 px-9 rounded-2xl h-12 md:h-19 bg-[#F8F8F8] text-base md:text-2xl font-normal transition-colors hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isDeletingAvatar ? 'Deleting...' : 'Delete'}
+                    {isDeletingAvatar
+                      ? t("profile.deleting")
+                      : t("profile.delete")}
                   </AlertDialogTrigger>
                   <AlertDialogContent className="rounded-xl p-8 data-[size=default]:sm:max-w-lg">
                     <AlertDialogHeader className="space-y-4">
@@ -176,38 +184,38 @@ function ProfileInner() {
                         <img
                           src="/images/logo.svg"
                           alt="Logo"
-                          className="h-9 w-28 lg:h-12 lg:w-[162px] xl:h-16 xl:w-[182px]"
+                          className="h-9 w-28 lg:h-12 lg:w-40.5 xl:h-16 xl:w-45.5"
                           height={64}
                           width={182}
                         />
                         <span className="font-semibold text-base md:text-2xl">
-                          Remove profile picture?
+                          {t("profile.deletePictureDialog.title")}
                         </span>
                       </AlertDialogTitle>
                       <AlertDialogDescription className="text-base xl:text-lg">
-                        This will permanently remove your profile picture.
+                        {t("profile.deletePictureDialog.description")}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel className="bg-brand mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg">
-                        Cancel
+                        {t("profile.deletePictureDialog.cancel")}
                       </AlertDialogCancel>
                       <AlertDialogAction
                         onClick={async () => {
                           try {
-                            setIsDeletingAvatar(true)
-                            await authClient.deleteAvatar()
-                            await checkAuth()
-                            toast.success('Avatar removed successfully')
+                            setIsDeletingAvatar(true);
+                            await authClient.deleteAvatar();
+                            await checkAuth();
+                            toast.success(t("profile.avatarRemoved"));
                           } catch (error) {
-                            toast.error('Failed to remove avatar')
+                            toast.error(t("profile.avatarRemoveFailed"));
                           } finally {
-                            setIsDeletingAvatar(false)
+                            setIsDeletingAvatar(false);
                           }
                         }}
                         className="bg-red-500 mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg"
                       >
-                        Yes, delete
+                        {t("profile.deletePictureDialog.confirm")}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -218,15 +226,15 @@ function ProfileInner() {
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="flex justify-between">
               <p className="font-semibold text-base md:text-2xl">
-                Personal Information
+                {t("profile.personalInfo")}
               </p>
               <Button
                 type="button"
                 onClick={() => {
                   if (isEditing) {
-                    form.reset()
+                    form.reset();
                   }
-                  setIsEditing(!isEditing)
+                  setIsEditing(!isEditing);
                 }}
                 variant="outline"
                 className="border-[#D7D7D7] py-px md:py-2.5 px-5 rounded-[9px] md:rounded-[15px] font-normal text-xs md:text-xl text-[#473D3E] gap-2.5 h-8 md:h-13"
@@ -238,7 +246,7 @@ function ProfileInner() {
                     className="size-3 md:size-6"
                   />
                 )}
-                {isEditing ? 'Cancel' : 'Edit'}
+                {isEditing ? t("profile.cancel") : t("profile.edit")}
               </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-7.5">
@@ -252,14 +260,14 @@ function ProfileInner() {
                         htmlFor="first-name"
                         className="text-[#7A7A7A] text-xs md:text-xl font-medium"
                       >
-                        First Name
+                        {t("profile.firstName")}
                       </FieldLabel>
                       <Input
                         {...field}
                         id="first-name"
                         disabled={!isEditing}
                         aria-invalid={fieldState.invalid}
-                        placeholder="First Name"
+                        placeholder={t("profile.firstName")}
                         autoComplete="off"
                         className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                       />
@@ -280,14 +288,14 @@ function ProfileInner() {
                         htmlFor="last-name"
                         className="text-[#7A7A7A] text-xs md:text-xl font-medium"
                       >
-                        Last Name
+                        {t("profile.lastName")}
                       </FieldLabel>
                       <Input
                         {...field}
                         id="last-name"
                         disabled={!isEditing}
                         aria-invalid={fieldState.invalid}
-                        placeholder="Last Name"
+                        placeholder={t("profile.lastName")}
                         autoComplete="off"
                         className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                       />
@@ -308,7 +316,7 @@ function ProfileInner() {
                         htmlFor="gender"
                         className="text-[#7A7A7A] text-xs md:text-xl font-medium"
                       >
-                        Gender
+                        {t("profile.gender")}
                       </FieldLabel>
                       <Select
                         onValueChange={field.onChange}
@@ -319,26 +327,28 @@ function ProfileInner() {
                           id="gender"
                           className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg data-placeholder:text-black/30 w-full lg:data-placeholder:text-sm xl:data-placeholder:text-lg"
                         >
-                          <SelectValue placeholder="Select Gender" />
+                          <SelectValue
+                            placeholder={t("profile.selectGender")}
+                          />
                         </SelectTrigger>
                         <SelectContent className="rounded-[10px] border-[#0000001A]">
                           <SelectItem
                             value="Male"
                             className="text-sm xl:text-lg py-2"
                           >
-                            Male
+                            {t("profile.genderOptions.male")}
                           </SelectItem>
                           <SelectItem
                             value="Female"
                             className="text-sm xl:text-lg py-2"
                           >
-                            Female
+                            {t("profile.genderOptions.female")}
                           </SelectItem>
                           <SelectItem
                             value="Others"
                             className="text-sm xl:text-lg py-2"
                           >
-                            Others
+                            {t("profile.genderOptions.others")}
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -359,7 +369,7 @@ function ProfileInner() {
                         htmlFor="date_of_birth"
                         className="text-[#7A7A7A] text-xs md:text-xl font-medium"
                       >
-                        Date of birth
+                        {t("profile.dateOfBirth")}
                       </FieldLabel>
                       <DatePickerDialog
                         disabled={!isEditing}
@@ -381,7 +391,7 @@ function ProfileInner() {
             </div>
             <div className="flex justify-between mt-6 md:mt-12 mb-3">
               <p className="font-semibold text-base md:text-2xl">
-                Contact Personal
+                {t("profile.contactPersonal")}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 md:gap-7.5">
@@ -395,14 +405,14 @@ function ProfileInner() {
                         htmlFor="phone-number"
                         className="text-[#7A7A7A] text-xs md:text-xl font-medium"
                       >
-                        Phone Number
+                        {t("profile.phoneNumber")}
                       </FieldLabel>
                       <Input
                         {...field}
                         id="phone-number"
                         disabled={!isEditing}
                         aria-invalid={fieldState.invalid}
-                        placeholder="Phone Number"
+                        placeholder={t("profile.phoneNumber")}
                         autoComplete="off"
                         className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                       />
@@ -423,14 +433,14 @@ function ProfileInner() {
                         htmlFor="email"
                         className="text-[#7A7A7A] text-xs md:text-xl font-medium"
                       >
-                        Email
+                        {t("profile.email")}
                       </FieldLabel>
                       <Input
                         {...field}
                         id="email"
                         disabled={!isEditing}
                         aria-invalid={fieldState.invalid}
-                        placeholder="Email Address"
+                        placeholder={t("profile.emailAddressPlaceholder")}
                         autoComplete="off"
                         className="border focus-visible:border-[#0000001A] rounded-[10px] border-[#0000001A] px-3 py-2 lg:px-3 lg:py-2 xl:px-6 xl:py-5 h-12 xl:h-14 text-sm xl:text-lg placeholder:text-black/30 w-full lg:placeholder:text-sm xl:placeholder:text-lg disabled:opacity-70 disabled:cursor-not-allowed"
                       />
@@ -456,27 +466,31 @@ function ProfileInner() {
                     <Spinner /> Updating...
                   </>
                 ) : (
-                  'Update Profile'
+                  t("profile.updateProfile")
                 )}
               </Button>
             )}
           </form>
           <div className="mt-15">
             <div className="flex justify-between mt-10 md:mt-12 mb-3">
-              <p className="font-semibold text-base md:text-2xl">Add Cards</p>
+              <p className="font-semibold text-base md:text-2xl">
+                {t("profile.addCards")}
+              </p>
             </div>
             <div className="max-w-xl">
               <div className="space-y-2.5">
-                <p className="text-base xl:text-xl">Card Number</p>
+                <p className="text-base xl:text-xl">
+                  {t("profile.cardNumber")}
+                </p>
                 <div className="h-15 flex items-center w-full border border-[#0000001A] rounded-[10px] px-4 bg-white">
                   <CardNumberElement
                     options={{
                       style: {
                         base: {
-                          fontSize: '16px',
-                          fontFamily: 'ui-monospace, monospace',
-                          color: '#000',
-                          '::placeholder': { color: '#aaa' },
+                          fontSize: "16px",
+                          fontFamily: "ui-monospace, monospace",
+                          color: "#000",
+                          "::placeholder": { color: "#aaa" },
                         },
                       },
                     }}
@@ -501,19 +515,21 @@ function ProfileInner() {
                   />
                 </div>
                 <p className="text-base xl:text-lg">
-                  We accept debit and credit cards types.
+                  {t("profile.acceptCards")}
                 </p>
               </div>
               <div className="mt-8">
-                <p className="text-base xl:text-xl">Expiry Date</p>
+                <p className="text-base xl:text-xl">
+                  {t("profile.expiryDate")}
+                </p>
                 <div className="h-15 flex items-center w-50 border border-[#0000001A] rounded-[10px] px-4 mt-3.5 bg-white">
                   <CardExpiryElement
                     options={{
                       style: {
                         base: {
-                          fontSize: '16px',
-                          color: '#000',
-                          '::placeholder': { color: '#aaa' },
+                          fontSize: "16px",
+                          color: "#000",
+                          "::placeholder": { color: "#aaa" },
                         },
                       },
                     }}
@@ -526,13 +542,13 @@ function ProfileInner() {
                   htmlFor="card-name"
                   className="text-base xl:text-xl block"
                 >
-                  Name on card
+                  {t("profile.nameOnCard")}
                 </label>
                 <Input
                   value={nameOnCard}
                   onChange={(e) => {
-                    const val = e.target.value.replace(/[^A-Za-z ]/g, '')
-                    setNameOnCard(val)
+                    const val = e.target.value.replace(/[^A-Za-z ]/g, "");
+                    setNameOnCard(val);
                   }}
                   id="card-name"
                   className="h-15 py-0 w-full uppercase border-[#0000001A] rounded-[10px] bg-white"
@@ -543,84 +559,80 @@ function ProfileInner() {
                   htmlFor="cvv"
                   className="text-base xl:text-xl font-normal"
                 >
-                  Security Code
+                  {t("profile.securityCode")}
                 </label>
                 <p className="text-base xl:text-xl text-[#00000080]">
-                  The last 3 digits on the back of the card.
+                  {t("profile.securityCodeHint")}
                 </p>
                 <div className="flex items-center gap-7.5">
-                  <div className="h-15 flex items-center w-[228px] border border-[#0000001A] rounded-[10px] px-4 bg-white">
+                  <div className="h-15 flex items-center w-57 border border-[#0000001A] rounded-[10px] px-4 bg-white">
                     <CardCvcElement
                       options={{
                         style: {
                           base: {
-                            fontSize: '16px',
-                            color: '#000',
-                            '::placeholder': { color: '#aaa' },
+                            fontSize: "16px",
+                            color: "#000",
+                            "::placeholder": { color: "#aaa" },
                           },
                         },
                       }}
                       className="w-full"
                     />
                   </div>
-                  <img
-                    src="/images/cvv.png"
-                    alt="cvv"
-                    className="w-15 h-10"
-                  />
+                  <img src="/images/cvv.png" alt="cvv" className="w-15 h-10" />
                 </div>
               </div>
 
               <Button
                 disabled={isSavingCard}
                 onClick={async () => {
-                  setIsSavingCard(true)
+                  setIsSavingCard(true);
 
                   if (!stripe || !elements) {
-                    toast.error('Payment system is loading, please wait...')
-                    setIsSavingCard(false)
-                    return
+                    toast.error(t("profile.paymentLoading"));
+                    setIsSavingCard(false);
+                    return;
                   }
 
                   const cardNumberElement =
-                    elements.getElement(CardNumberElement)
+                    elements.getElement(CardNumberElement);
                   if (!cardNumberElement) {
-                    toast.error('Card details are required')
-                    setIsSavingCard(false)
-                    return
+                    toast.error(t("profile.cardDetailsRequired"));
+                    setIsSavingCard(false);
+                    return;
                   }
 
                   const { error: stripeError, paymentMethod } =
                     await stripe.createPaymentMethod({
-                      type: 'card',
+                      type: "card",
                       card: cardNumberElement,
                       billing_details: {
                         name: nameOnCard || undefined,
                       },
-                    })
+                    });
 
                   if (stripeError || !paymentMethod) {
                     toast.error(
-                      stripeError?.message || 'Failed to process card',
-                    )
-                    setIsSavingCard(false)
-                    return
+                      stripeError?.message || t("profile.cardProcessFailed"),
+                    );
+                    setIsSavingCard(false);
+                    return;
                   }
 
                   try {
-                    await bookingClient.savePaymentMethod(paymentMethod.id)
-                    toast.success('Card saved successfully!')
-                    mutate()
+                    await bookingClient.savePaymentMethod(paymentMethod.id);
+                    toast.success(t("profile.cardSaved"));
+                    mutate();
                     // Clear the inputs
-                    cardNumberElement.clear()
-                    elements.getElement(CardExpiryElement)?.clear()
-                    elements.getElement(CardCvcElement)?.clear()
-                    setNameOnCard('')
+                    cardNumberElement.clear();
+                    elements.getElement(CardExpiryElement)?.clear();
+                    elements.getElement(CardCvcElement)?.clear();
+                    setNameOnCard("");
                   } catch (error) {
-                    toast.error('Failed to save card to your profile')
-                    console.error(error)
+                    toast.error(t("profile.cardSaveFailed"));
+                    console.error(error);
                   } finally {
-                    setIsSavingCard(false)
+                    setIsSavingCard(false);
                   }
                 }}
                 type="button"
@@ -628,24 +640,23 @@ function ProfileInner() {
               >
                 {isSavingCard ? (
                   <>
-                    <Spinner
-                      className="mx-3"
-                      data-icon="inline-start"
-                    />{' '}
-                    Saving...
+                    <Spinner className="mx-3" data-icon="inline-start" />{" "}
+                    {t("profile.saving")}
                   </>
                 ) : (
-                  'Save Card'
+                  t("profile.saveCard")
                 )}
               </Button>
             </div>
           </div>
           <div className="mt-20">
             <div className="flex justify-between mt-12 mb-3">
-              <p className="font-semibold text-base md:text-2xl">Saved Cards</p>
+              <p className="font-semibold text-base md:text-2xl">
+                {t("profile.savedCards")}
+              </p>
             </div>
             {savedCards.length === 0 ? (
-              <p className="text-gray-500">No saved cards found.</p>
+              <p className="text-gray-500">{t("profile.noSavedCards")}</p>
             ) : (
               <div className="space-y-4 max-w-sm">
                 {savedCards.map((card: any) => (
@@ -657,21 +668,21 @@ function ProfileInner() {
                       **********{card.last4}
                     </p>
                     <p className="text-sm md:text-lg xl:text-xl text-[#000000]">
-                      {card.exp_month.toString().padStart(2, '0')}/
+                      {card.exp_month.toString().padStart(2, "0")}/
                       {card.exp_year.toString().slice(-2)}
                     </p>
                     <button
                       disabled={isDeletingCardId === card.id}
                       onClick={async () => {
                         try {
-                          setIsDeletingCardId(card.id)
-                          await bookingClient.deletePaymentMethod(card.id)
-                          mutate()
-                          toast.success('Card removed successfully')
+                          setIsDeletingCardId(card.id);
+                          await bookingClient.deletePaymentMethod(card.id);
+                          mutate();
+                          toast.success(t("profile.cardRemoved"));
                         } catch (err) {
-                          toast.error('Failed to remove card')
+                          toast.error(t("profile.cardRemoveFailed"));
                         } finally {
-                          setIsDeletingCardId(null)
+                          setIsDeletingCardId(null);
                         }
                       }}
                       className="text-[#000000] disabled:opacity-50 transition-colors"
@@ -680,10 +691,7 @@ function ProfileInner() {
                       {isDeletingCardId === card.id ? (
                         <Spinner className="size-6" />
                       ) : (
-                        <Trash2
-                          strokeWidth={1.5}
-                          className="size-6"
-                        />
+                        <Trash2 strokeWidth={1.5} className="size-6" />
                       )}
                     </button>
                   </div>
@@ -697,7 +705,9 @@ function ProfileInner() {
                 disabled={isDeletingAccount}
                 className="bg-red-500 hover:bg-red-600 focus:ring-red-500 text-white px-6 md:px-8 py-3 md:py-4.2 text-sm md:text-xl font-semibold h-14 md:h-17 rounded-[5px] w-full md:w-auto transition-colors disabled:opacity-50"
               >
-                {isDeletingAccount ? 'Deleting...' : 'Delete Account'}
+                {isDeletingAccount
+                  ? t("profile.deletingAccount")
+                  : t("profile.deleteAccount")}
               </AlertDialogTrigger>
               <AlertDialogContent className="rounded-xl p-8 data-[size=default]:sm:max-w-lg">
                 <AlertDialogHeader className="space-y-4">
@@ -705,28 +715,27 @@ function ProfileInner() {
                     <img
                       src="/images/logo.svg"
                       alt="Logo"
-                      className="h-9 w-28 lg:h-12 lg:w-[162px] xl:h-16 xl:w-[182px]"
+                      className="h-9 w-28 lg:h-12 lg:w-40.5 xl:h-16 xl:w-45.5"
                       height={64}
                       width={182}
                     />
                     <span className="font-semibold text-base md:text-2xl">
-                      Are you absolutely sure?
+                      {t("profile.deleteAccountDialog.title")}
                     </span>
                   </AlertDialogTitle>
                   <AlertDialogDescription className="text-base xl:text-lg">
-                    This action cannot be undone. This will permanently delete
-                    your account and remove your data from our servers.
+                    {t("profile.deleteAccountDialog.description")}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel className="bg-brand mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg">
-                    Cancel
+                    {t("profile.deleteAccountDialog.cancel")}
                   </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDeleteAccount}
                     className="bg-red-500 mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg"
                   >
-                    Yes, delete account
+                    {t("profile.deleteAccountDialog.confirm")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -736,7 +745,7 @@ function ProfileInner() {
       </section>
       <Footer />
     </>
-  )
+  );
 }
 
 export default function Profile() {
@@ -744,5 +753,5 @@ export default function Profile() {
     <Elements stripe={stripePromise}>
       <ProfileInner />
     </Elements>
-  )
+  );
 }

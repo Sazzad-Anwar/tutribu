@@ -34,8 +34,10 @@ export const AdminModule: any = new Elysia({ prefix: '/api/admin' })
     }
   })
   // List all users
-  .get('/users', async () => {
-    return await listUsers()
+  .get('/users', async ({ query }) => {
+    const page = Math.max(1, parseInt((query as any).page ?? '1', 10))
+    const limit = Math.min(50, Math.max(1, parseInt((query as any).limit ?? '12', 10)))
+    return await listUsers(page, limit)
   })
   // Toggle user suspension
   .post('/users/:id/toggle-suspension', async ({ params: { id } }) => {

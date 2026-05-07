@@ -1,88 +1,160 @@
-import { Link } from 'react-router'
-import { Separator } from './ui/separator'
+import { Link } from "react-router";
+import { Separator } from "./ui/separator";
+import { useTranslation } from "react-i18next";
 
 export default function Footer() {
+  const { t } = useTranslation();
+
   const links = [
     {
-      title: 'Services',
+      title: t("footer.sections.services.title"),
       links: [
-        { title: 'Terms & Condition', link: '/terms-and-conditions' },
-        { title: 'Help & Support', link: '/help-and-support' },
-        { title: 'Manage My Booking', link: '/manage-my-booking' },
-        { title: 'Travel Insurance', link: '/travel-insurance' },
-        { title: 'Cancellation Policy', link: '/cancellation-policy' },
-        { title: 'Gift Cards', link: '/gift-cards' },
-        { title: 'Contact Us', link: '/contact-us' },
+        {
+          title: t("footer.sections.services.termsCondition"),
+          link: "/terms-and-conditions",
+        },
+        {
+          title: t("footer.sections.services.helpSupport"),
+          link: "/help-and-support",
+        },
+        {
+          title: t("footer.sections.services.manageMyBooking"),
+          link: "/manage-my-booking",
+        },
+        {
+          title: t("footer.sections.services.travelInsurance"),
+          link: "/travel-insurance",
+        },
+        {
+          title: t("footer.sections.services.cancellationPolicy"),
+          link: "/cancellation-policy",
+        },
+        { title: t("footer.sections.services.giftCards"), link: "/gift-cards" },
+        { title: t("footer.sections.services.contactUs"), link: "/contact-us" },
       ],
     },
     {
-      title: 'Company',
+      title: t("footer.sections.company.title"),
       links: [
-        { title: 'Careers', link: '/careers' },
-        { title: 'Press & Media', link: '/press-and-media' },
-        { title: 'Blog & Travel Tips', link: '/blog' },
-        { title: 'Sustainability', link: '/sustainability' },
-        { title: 'Partnerships', link: '/partnerships' },
-        { title: 'Affiliates', link: '/affiliates' },
+        { title: t("footer.sections.company.careers"), link: "/careers" },
+        {
+          title: t("footer.sections.company.pressMedia"),
+          link: "/press-and-media",
+        },
+        { title: t("footer.sections.company.blogTravelTips"), link: "/blog" },
+        {
+          title: t("footer.sections.company.sustainability"),
+          link: "/sustainability",
+        },
+        {
+          title: t("footer.sections.company.partnerships"),
+          link: "/partnerships",
+        },
+        { title: t("footer.sections.company.affiliates"), link: "/affiliates" },
       ],
     },
     {
-      title: 'Quick links',
+      title: t("footer.sections.quickLinks.title"),
       links: [
-        { title: 'Destinations', link: '/destinations' },
-        { title: 'Popular Trips', link: '/trips' },
-        { title: 'Flights', link: '/flights' },
-        { title: 'Hotels', link: '/hotels' },
-        { title: 'Car Rentals', link: '/car-rentals' },
-        { title: 'Group Tours', link: '/group-tours' },
-        { title: 'Special Offers', link: '/special-offers' },
+        {
+          title: t("footer.sections.quickLinks.destinations"),
+          link: "/destinations",
+        },
+        { title: t("footer.sections.quickLinks.popularTrips"), link: "/trips" },
+        { title: t("footer.sections.quickLinks.flights"), link: "/flights" },
+        { title: t("footer.sections.quickLinks.hotels"), link: "/hotels" },
+        {
+          title: t("footer.sections.quickLinks.carRentals"),
+          link: "/car-rentals",
+        },
+        {
+          title: t("footer.sections.quickLinks.groupTours"),
+          link: "/group-tours",
+        },
+        {
+          title: t("footer.sections.quickLinks.specialOffers"),
+          link: "/special-offers",
+        },
       ],
     },
     {
-      title: 'Community',
+      title: t("footer.sections.community.title"),
       links: [
-        { title: 'Traveler Reviews', link: '/reviews' },
-        { title: 'Refer a Friend', link: '/refer-a-friend' },
-        { title: 'Loyalty Program', link: '/loyalty-program' },
-        { title: 'Travel Stories', link: '/stories' },
-        { title: 'Photo Gallery', link: '/gallery' },
-        { title: 'Newsletter Signup', link: '/newsletter' },
-        { title: 'Join Our Tribe', link: '/join-our-tribe' },
+        {
+          title: t("footer.sections.community.travelerReviews"),
+          link: "/reviews",
+        },
+        {
+          title: t("footer.sections.community.referAFriend"),
+          link: "/refer-a-friend",
+        },
+        {
+          title: t("footer.sections.community.loyaltyProgram"),
+          link: "/loyalty-program",
+        },
+        {
+          title: t("footer.sections.community.travelStories"),
+          link: "/stories",
+        },
+        {
+          title: t("footer.sections.community.photoGallery"),
+          link: "/gallery",
+        },
+        {
+          title: t("footer.sections.community.newsletterSignup"),
+          link: "/newsletter",
+        },
+        {
+          title: t("footer.sections.community.joinOurTribe"),
+          link: "/join-our-tribe",
+        },
       ],
     },
     {
-      title: 'FAQs',
+      title: t("footer.sections.faqs.title"),
       links: [
-        { title: 'How to Book a Trip', link: '/how-to-book' },
-        { title: 'Payment Options', link: '/payment-options' },
-        { title: 'Refund & Cancellation', link: '/refund-and-cancellation' },
-        { title: 'Travel Safety', link: '/travel-safety' },
-        { title: 'Account Settings', link: '/account-settings' },
-        { title: 'Loyalty Program', link: '/loyalty-program' },
-        { title: 'Customer Support', link: '/customer-support' },
+        { title: t("footer.sections.faqs.howToBook"), link: "/how-to-book" },
+        {
+          title: t("footer.sections.faqs.paymentOptions"),
+          link: "/payment-options",
+        },
+        {
+          title: t("footer.sections.faqs.refundCancellation"),
+          link: "/refund-and-cancellation",
+        },
+        {
+          title: t("footer.sections.faqs.travelSafety"),
+          link: "/travel-safety",
+        },
+        {
+          title: t("footer.sections.faqs.accountSettings"),
+          link: "/account-settings",
+        },
+        {
+          title: t("footer.sections.faqs.loyaltyProgram"),
+          link: "/loyalty-program",
+        },
+        {
+          title: t("footer.sections.faqs.customerSupport"),
+          link: "/customer-support",
+        },
       ],
     },
-  ]
+  ];
+
   return (
     <footer>
       <section className="container h-auto mx-auto my-auto pt-12">
-        <Link
-          to="/"
-          className="mb-5"
-        >
+        <Link to="/" className="mb-5">
           <img
             src="/images/logo.svg"
             alt="Logo"
-            className="h-9 w-28 lg:h-12 lg:w-[162px] xl:h-16 xl:w-[182px]"
+            className="h-9 w-28 lg:h-12 lg:w-40.5 xl:h-16 xl:w-45.5"
             height={64}
             width={182}
           />
         </Link>
-        <p className="text-lg">
-          Discover the world with Tu Tribu Viajera — your trusted platform for
-          booking unforgettable trips, flights, hotels, and experiences. Travel
-          made easy, inspiring, and full of adventure.
-        </p>
+        <p className="text-lg">{t("footer.tagline")}</p>
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 mt-12">
           {links.map((link, index) => (
             <div key={index}>
@@ -106,7 +178,9 @@ export default function Footer() {
         </div>
         <div className="mt-20 flex flex-col gap-6.5 md:flex-row items-center justify-between">
           <div>
-            <p className="text-base text-center md:text-left mb-2">We accept</p>
+            <p className="text-base text-center md:text-left mb-2">
+              {t("footer.weAccept")}
+            </p>
             <div className="gap-2 flex items-center">
               <img
                 src="/images/visa-icon.svg"
@@ -160,10 +234,9 @@ export default function Footer() {
         </div>
       </section>
       <Separator className="mt-6 mb-2.5 bg-[#E0E0E0] w-full" />
-      <p className="text-center px-16 pb-5 md:px-0 text-sm lg:text-lg leading-[25px] md:leading-[100%] text-[#69666C] md:pb-4">
-        © 2025 Tu Tribu Viajera. All rights reserved. | Privacy Policy | Terms &
-        Conditions
+      <p className="text-center px-16 pb-5 md:px-0 text-sm lg:text-lg leading-6.25 md:leading-[100%] text-[#69666C] md:pb-4">
+        {t("footer.copyright")}
       </p>
     </footer>
-  )
+  );
 }

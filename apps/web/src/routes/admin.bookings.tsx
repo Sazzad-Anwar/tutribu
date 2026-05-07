@@ -134,7 +134,7 @@ export default function AdminBookings() {
             <Button
               variant="outline"
               onClick={() => navigate('/admin/users')}
-              className="bg-white border-[#00AEEF] text-[#00AEEF] hover:bg-[#00AEEF] hover:text-white transition-all px-8"
+              className="cursor-pointer h-9 xl:h-12 border-2 bg-brand hover:bg-brand/80 text-white border-brand py-2.5 px-5 xl:px-7 rounded-sm font-medium text-base leading-[120%]"
             >
               Manage Users
             </Button>

@@ -1,0 +1,324 @@
+{
+  "common": {
+    "back": "Back",
+    "login": "Login",
+    "signUp": "Sign Up",
+    "signIn": "Sign In",
+    "logout": "Logout",
+    "profile": "Profile",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "or": "Or",
+    "loading": "Loading...",
+    "backToHome": "Back to Home",
+    "backToLogin": "Back to Login",
+    "dashboard": "Dashboard",
+    "myTrips": "My Trips"
+  },
+  "header": {
+    "nav": {
+      "home": "Home",
+      "destination": "Destination",
+      "aboutUs": "About Us",
+      "deals": "Deals",
+      "blog": "Blog",
+      "support": "Support"
+    },
+    "megaMenu": {
+      "destinations": {
+        "americas": "Americas",
+        "asia": "Asia",
+        "africa": "Africa",
+        "europe": "Europe",
+        "comingSoon": "Coming Soon",
+        "featured": {
+          "title": "Maldives",
+          "description": "Iconic overwater bungalows, blinding white sand and some of the clearest water in the world.",
+          "cta": "Find your trip"
+        }
+      },
+      "about": {
+        "whoWeAre": {
+          "title": "Who we are",
+          "packLeaders": "Meet your Pack Leaders",
+          "travelExperts": "Meet Your Travel Experts",
+          "customerExperience": "Our Customer Experience"
+        },
+        "howItWorks": {
+          "title": "How it works",
+          "howItWorks": "How it works",
+          "faqs": "FAQs",
+          "soloTravel": "Travel Extra About Solo Travel",
+          "instalments": "Instalments"
+        },
+        "company": {
+          "title": "Company",
+          "careers": "Careers at TU Tribu Viajera",
+          "partners": "Partner as a Travel Agent",
+          "terms": "Trip terms and conditions",
+          "guarantee": "Flash Pack Guarantee",
+          "safety": "Safety with TU Tribu Viajera",
+          "privacy": "Privacy Policy"
+        }
+      }
+    },
+    "adminDashboard": "Admin Dashboard",
+    "myTrips": "My trips"
+  },
+  "footer": {
+    "tagline": "Discover the world with Tu Tribu Viajera — your trusted platform for booking unforgettable trips, flights, hotels, and experiences. Travel made easy, inspiring, and full of adventure.",
+    "weAccept": "We accept",
+    "copyright": "© 2025 Tu Tribu Viajera. All rights reserved. | Privacy Policy | Terms & Conditions",
+    "sections": {
+      "services": {
+        "title": "Services",
+        "termsCondition": "Terms & Condition",
+        "helpSupport": "Help & Support",
+        "manageMyBooking": "Manage My Booking",
+        "travelInsurance": "Travel Insurance",
+        "cancellationPolicy": "Cancellation Policy",
+        "giftCards": "Gift Cards",
+        "contactUs": "Contact Us"
+      },
+      "company": {
+        "title": "Company",
+        "careers": "Careers",
+        "pressMedia": "Press & Media",
+        "blogTravelTips": "Blog & Travel Tips",
+        "sustainability": "Sustainability",
+        "partnerships": "Partnerships",
+        "affiliates": "Affiliates"
+      },
+      "quickLinks": {
+        "title": "Quick links",
+        "destinations": "Destinations",
+        "popularTrips": "Popular Trips",
+        "flights": "Flights",
+        "hotels": "Hotels",
+        "carRentals": "Car Rentals",
+        "groupTours": "Group Tours",
+        "specialOffers": "Special Offers"
+      },
+      "community": {
+        "title": "Community",
+        "travelerReviews": "Traveler Reviews",
+        "referAFriend": "Refer a Friend",
+        "loyaltyProgram": "Loyalty Program",
+        "travelStories": "Travel Stories",
+        "photoGallery": "Photo Gallery",
+        "newsletterSignup": "Newsletter Signup",
+        "joinOurTribe": "Join Our Tribe"
+      },
+      "faqs": {
+        "title": "FAQs",
+        "howToBook": "How to Book a Trip",
+        "paymentOptions": "Payment Options",
+        "refundCancellation": "Refund & Cancellation",
+        "travelSafety": "Travel Safety",
+        "accountSettings": "Account Settings",
+        "loyaltyProgram": "Loyalty Program",
+        "customerSupport": "Customer Support"
+      }
+    }
+  },
+  "signin": {
+    "title": "Sign in",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email address",
+    "password": "Password",
+    "passwordPlaceholder": "Password",
+    "forgotPassword": "Forgot Password?",
+    "signInButton": "Sign In",
+    "continueWithGoogle": "Continue with Google",
+    "noAccount": "Don't have an account?",
+    "signUpNow": "Sign up now",
+    "googleSuccess": "Signed in with Google successfully",
+    "googleFailed": "Google login failed",
+    "signInSuccess": "Signed in successfully",
+    "signInFailed": "Failed to sign in",
+    "googleSignInFailed": "Failed to sign in with Google"
+  },
+  "signup": {
+    "title": "Sign Up",
+    "continueWithGoogle": "Continue with Google",
+    "orSignUpWithEmail": "or sign up with your email",
+    "firstName": "First Name",
+    "firstNamePlaceholder": "First name",
+    "lastName": "Last Name",
+    "lastNamePlaceholder": "Last name",
+    "phoneNumber": "Phone Number",
+    "phoneNumberPlaceholder": "Phone Number",
+    "emailAddress": "Email Address",
+    "emailAddressPlaceholder": "Email Address",
+    "password": "Password",
+    "passwordPlaceholder": "Password",
+    "confirmPassword": "Confirm Password",
+    "agreeTerms": "By Signing Up I agree with",
+    "termsConditions": "Terms & Conditions",
+    "signInButton": "Sign In",
+    "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "accountCreated": "Account created successfully",
+    "accountCreationFailed": "Failed to create account",
+    "googleSuccess": "Signed in with Google successfully",
+    "googleFailed": "Google login failed",
+    "googleSignInFailed": "Failed to sign in with Google"
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "subtitle": "Enter your email address and we'll send you a link to reset your password.",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "john@example.com",
+    "sendResetLink": "Send Reset Link",
+    "sending": "Sending...",
+    "backToLogin": "Back to Login",
+    "resetLinkSent": "Reset link sent to your email!",
+    "somethingWentWrong": "Something went wrong"
+  },
+  "resetPassword": {
+    "title": "Reset Password",
+    "subtitle": "Please enter your new password.",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "resetButton": "Reset Password",
+    "resetting": "Resetting...",
+    "successMessage": "Password reset successfully! Please login.",
+    "invalidToken": "Invalid or missing reset token",
+    "somethingWentWrong": "Something went wrong"
+  },
+  "myTrips": {
+    "title": "My Trips",
+    "noTripsTitle": "No trips found",
+    "noTripsSubtitle": "Looks like you haven't booked any trips yet.",
+    "exploreDestinations": "Explore Destinations",
+    "traveler": "Traveler",
+    "travelersCount": "2 Adults and 1 Kid",
+    "paymentStatus": "Payment Status",
+    "bookingStatus": "Booking Status",
+    "cancelTrip": "Cancel Trip",
+    "cancelling": "Cancelling...",
+    "cancelled": "Cancelled",
+    "cancelSuccess": "Trip cancelled successfully. 70% refund has been processed.",
+    "cancelFailed": "Failed to cancel trip",
+    "cancelDialog": {
+      "title": "Are you absolutely sure?",
+      "description": "This action cannot be undone. This will permanently cancel your trip to Ibiza. Please note that",
+      "refundNote": "only 70% of the paid amount will be refunded",
+      "refundSuffix": "to your original payment method.",
+      "keepTrip": "Keep Trip",
+      "cancelTrip": "Cancel Trip"
+    }
+  },
+  "tripDetail": {
+    "back": "Back",
+    "when": "When ?",
+    "roomOptions": "Room Options",
+    "onSale": "On Sale",
+    "questionsTitle": "Got questions? We're here to help.",
+    "questionsSubtitle": "Meet people who get where you are in life.",
+    "callCta": "Call: (331) 214-3422",
+    "weAreArriving": "We are arriving",
+    "departOn": "Depart on {{day}}",
+    "soldOut": "Sold out",
+    "closingSoon": "Closing soon",
+    "unlockToSee": "Unlock to see who's going",
+    "joinGroup": "Join this group",
+    "privateRoomRequest": "Private room on request",
+    "bookYourTrip": {
+      "title": "Book your trip today",
+      "description": "Secure your spot with a deposit of just £200 for tours departing in 90+ days."
+    },
+    "flexiblePayment": {
+      "title": "Flexible ways to pay",
+      "description": "Split your payment into 3 or 6 monthly installments, or pay in full 90 days prior to travel."
+    },
+    "guarantee": {
+      "title": "Our Guarantee",
+      "description": "If anything under our control doesn't meet expectations, we'll make it right for you."
+    }
+  },
+  "checkout": {
+    "step1of2": "Step 1 of 2",
+    "orderDetails": "Order details"
+  },
+  "profile": {
+    "title": "Profile",
+    "uploadPicture": "Upload new picture",
+    "uploading": "Uploading...",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "deletePictureDialog": {
+      "title": "Remove profile picture?",
+      "description": "This will permanently remove your profile picture.",
+      "cancel": "Cancel",
+      "confirm": "Yes, delete"
+    },
+    "personalInfo": "Personal Information",
+    "contactPersonal": "Contact Personal",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "gender": "Gender",
+    "genderOptions": {
+      "male": "Male",
+      "female": "Female",
+      "others": "Others"
+    },
+    "selectGender": "Select Gender",
+    "dateOfBirth": "Date of birth",
+    "phoneNumber": "Phone Number",
+    "email": "Email",
+    "emailAddressPlaceholder": "Email Address",
+    "updateProfile": "Update Profile",
+    "updating": "Updating...",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "profileUpdated": "Profile updated successfully",
+    "profileUpdateFailed": "Failed to update profile",
+    "addCards": "Add Cards",
+    "cardNumber": "Card Number",
+    "acceptCards": "We accept debit and credit cards types.",
+    "expiryDate": "Expiry Date",
+    "nameOnCard": "Name on card",
+    "securityCode": "Security Code",
+    "securityCodeHint": "The last 3 digits on the back of the card.",
+    "saveCard": "Save Card",
+    "saving": "Saving...",
+    "cardSaved": "Card saved successfully!",
+    "cardSaveFailed": "Failed to save card to your profile",
+    "savedCards": "Saved Cards",
+    "noSavedCards": "No saved cards found.",
+    "cardRemoved": "Card removed successfully",
+    "cardRemoveFailed": "Failed to remove card",
+    "paymentLoading": "Payment system is loading, please wait...",
+    "cardDetailsRequired": "Card details are required",
+    "cardProcessFailed": "Failed to process card",
+    "avatarUploaded": "Avatar uploaded successfully",
+    "avatarUploadFailed": "Failed to upload avatar",
+    "avatarRemoved": "Avatar removed successfully",
+    "avatarRemoveFailed": "Failed to remove avatar",
+    "deleteAccount": "Delete Account",
+    "deletingAccount": "Deleting...",
+    "accountDeleted": "Account deleted successfully",
+    "accountDeleteFailed": "Failed to delete account",
+    "deleteAccountDialog": {
+      "title": "Are you absolutely sure?",
+      "description": "This action cannot be undone. This will permanently delete your account and remove your data from our servers.",
+      "cancel": "Cancel",
+      "confirm": "Yes, delete account"
+    }
+  },
+  "errors": {
+    "pageNotFound": "404",
+    "lostInAdventure": "Lost in Adventure?",
+    "pageNotFoundDesc": "The requested page could not be found.",
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedError": "An unexpected error occurred.",
+    "oops": "Oops!"
+  },
+  "languageSwitcher": {
+    "english": "English",
+    "spanish": "Español (MX)"
+  }
+}

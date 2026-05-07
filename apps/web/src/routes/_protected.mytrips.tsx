@@ -1,7 +1,7 @@
-import { Link } from 'react-router'
-import dayjs from 'dayjs'
-import Footer from '../components/footer'
-import Header from '../components/header'
+import { Link } from "react-router";
+import dayjs from "dayjs";
+import Footer from "../components/footer";
+import Header from "../components/header";
 import {
   Table,
   TableBody,
@@ -9,12 +9,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '../components/ui/table'
-import { bookingClient } from '../lib/booking-client'
-import useSWR, { useSWRConfig } from 'swr'
-import { cn } from '../lib/utils'
-import { type Booking } from '@tutribu/types'
-import { useEffect, useState } from 'react'
+} from "../components/ui/table";
+import { bookingClient } from "../lib/booking-client";
+import useSWR, { useSWRConfig } from "swr";
+import { cn } from "../lib/utils";
+import { type Booking } from "@tutribu/types";
+import { useEffect, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,45 +25,45 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '../components/ui/alert-dialog'
-import { toast } from 'sonner'
-import { apiClient } from '../lib/api-client'
-import { Loader2 } from 'lucide-react'
+} from "../components/ui/alert-dialog";
+import { toast } from "sonner";
+import { apiClient } from "../lib/api-client";
+import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function MyTrips() {
-  const { mutate } = useSWRConfig()
-  const { data } = useSWR<Booking[]>('bookings', bookingClient.list)
-  const [trips, setTrips] = useState<any[]>([])
-  const [isCancelling, setIsCancelling] = useState<string | null>(null)
+  const { mutate } = useSWRConfig();
+  const { data } = useSWR<Booking[]>("bookings", bookingClient.list);
+  const { t } = useTranslation();
+  const [trips, setTrips] = useState<any[]>([]);
+  const [isCancelling, setIsCancelling] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchTrips = async (id: number) => {
-      const { data } = await apiClient.get(`/wp/v2/trips/${id}`)
+      const { data } = await apiClient.get(`/wp/v2/trips/${id}`);
       const { data: media } = await apiClient.get(
         `/wp/v2/media/${data?.featured_media}`,
-      )
-      setTrips((prev) => [...prev, { ...data, media }])
-    }
+      );
+      setTrips((prev) => [...prev, { ...data, media }]);
+    };
 
     data?.forEach(async (item) => {
-      await fetchTrips(item.tripId)
-    })
-  }, [data])
+      await fetchTrips(item.tripId);
+    });
+  }, [data]);
 
   const handleCancel = async (id: string) => {
     try {
-      setIsCancelling(id)
-      await bookingClient.cancel(id)
-      toast.success(
-        'Trip cancelled successfully. 70% refund has been processed.',
-      )
-      mutate('bookings')
+      setIsCancelling(id);
+      await bookingClient.cancel(id);
+      toast.success(t("myTrips.cancelSuccess"));
+      mutate("bookings");
     } catch (err: any) {
-      toast.error(err.message || 'Failed to cancel trip')
+      toast.error(err.message || t("myTrips.cancelFailed"));
     } finally {
-      setIsCancelling(null)
+      setIsCancelling(null);
     }
-  }
+  };
 
   return (
     <main>
@@ -71,7 +71,7 @@ export default function MyTrips() {
       <section className="pt-8 pb-12 xl:pt-12.5 xl:pb-17.5 px-4 xl:px-0">
         <div className="container mx-auto">
           <h1 className="text-4xl xl:text-[54px] font-tinos font-bold mb-8 xl:mb-17.5 text-center xl:text-left">
-            My Trips
+            {t("myTrips.title")}
           </h1>
           <div className="overflow-hidden w-full">
             {data?.length === 0 ? (
@@ -93,25 +93,25 @@ export default function MyTrips() {
                   </svg>
                 </div>
                 <h3 className="text-2xl font-medium text-gray-900 mb-2">
-                  No trips found
+                  {t("myTrips.noTripsTitle")}
                 </h3>
                 <p className="text-gray-500 mb-6">
-                  Looks like you haven't booked any trips yet.
+                  {t("myTrips.noTripsSubtitle")}
                 </p>
                 <Link
                   to="/"
                   className="bg-[#00AEEF] hover:bg-[#0098d1] text-white px-8 py-3 rounded-md font-medium transition-colors"
                 >
-                  Explore Destinations
+                  {t("myTrips.exploreDestinations")}
                 </Link>
               </div>
             ) : (
               <Table className="block xl:table w-full">
                 <TableBody className="block xl:table-row-group">
                   {data?.map((item: any, index: number) => {
-                    const trip = trips?.find((trip) => item.tripId === trip.id)
-                    const group = trip?.meta?.group_item[item.groupId]
-                    console.log(group)
+                    const trip = trips?.find((trip) => item.tripId === trip.id);
+                    const group = trip?.meta?.group_item[item.groupId];
+                    console.log(group);
                     return (
                       <TableRow
                         key={item.id || index}
@@ -139,7 +139,7 @@ export default function MyTrips() {
                               </h1>
                               <p className="text-base xl:text-lg text-gray-500 xl:text-black">
                                 {dayjs(group?.arriving_date).format(
-                                  'DD MMM YYYY',
+                                  "DD MMM YYYY",
                                 )}
                               </p>
                             </div>
@@ -148,24 +148,24 @@ export default function MyTrips() {
                         <TableCell className="block xl:table-cell py-4 xl:py-0 border-b border-gray-100 xl:border-none">
                           <div className="flex xl:flex-col justify-between xl:justify-start items-center xl:items-start xl:space-y-4.5">
                             <p className="text-lg xl:text-xl font-medium xl:font-normal">
-                              Traveler
+                              {t("myTrips.traveler")}
                             </p>
                             <p className="text-base xl:text-lg">
-                              2 Adults and 1 Kid
+                              {t("myTrips.travelersCount")}
                             </p>
                           </div>
                         </TableCell>
                         <TableCell className="block xl:table-cell py-4 xl:py-0 border-b border-gray-100 xl:border-none">
                           <div className="flex xl:flex-col justify-between xl:justify-start xl:items-center space-y-0 xl:space-y-2.5">
                             <p className="text-lg xl:text-xl font-medium xl:font-normal">
-                              Payment Status
+                              {t("myTrips.paymentStatus")}
                             </p>
                             <div
                               className={cn(
-                                item.paymentStatus === 'COMPLETED'
-                                  ? 'bg-[#00AEEF]'
-                                  : 'bg-[#EFCB00]',
-                                'py-2 xl:py-4 w-auto px-6 xl:px-10 rounded-[5px] text-white',
+                                item.paymentStatus === "COMPLETED"
+                                  ? "bg-[#00AEEF]"
+                                  : "bg-[#EFCB00]",
+                                "py-2 xl:py-4 w-auto px-6 xl:px-10 rounded-[5px] text-white",
                               )}
                             >
                               <p className="text-sm xl:text-lg">
@@ -177,14 +177,14 @@ export default function MyTrips() {
                         <TableCell className="block xl:table-cell py-4 xl:py-0 border-b border-gray-100 xl:border-none">
                           <div className="flex xl:flex-col justify-between xl:justify-start xl:items-center space-y-0 xl:space-y-2.5">
                             <p className="text-lg xl:text-xl font-medium xl:font-normal">
-                              Booking Status
+                              {t("myTrips.bookingStatus")}
                             </p>
                             <div
                               className={cn(
-                                item.bookingStatus === 'CONFIRMED'
-                                  ? 'bg-[#00AEEF]'
-                                  : 'bg-[#EFCB00]',
-                                'py-2 xl:py-4 w-auto px-6 xl:px-10 rounded-[5px] text-white',
+                                item.bookingStatus === "CONFIRMED"
+                                  ? "bg-[#00AEEF]"
+                                  : "bg-[#EFCB00]",
+                                "py-2 xl:py-4 w-auto px-6 xl:px-10 rounded-[5px] text-white",
                               )}
                             >
                               <p className="text-sm xl:text-lg">
@@ -194,7 +194,7 @@ export default function MyTrips() {
                           </div>
                         </TableCell>
                         <TableCell className="block xl:table-cell pt-4 xl:pt-0 text-center text-[#C0C0C0] text-base xl:text-lg cursor-pointer">
-                          {item.bookingStatus !== 'CANCELLED' ? (
+                          {item.bookingStatus !== "CANCELLED" ? (
                             <AlertDialog>
                               <AlertDialogTrigger
                                 disabled={dayjs(group?.arriving_date).isBefore(
@@ -203,8 +203,8 @@ export default function MyTrips() {
                                 className="disabled:text-gray-400 disabled:cursor-not-allowed hover:text-red-500 disabled:hover:text-gray-400 cursor-pointer transition-colors"
                               >
                                 {isCancelling === item.id
-                                  ? 'Cancelling...'
-                                  : 'Cancel Trip'}
+                                  ? t("myTrips.cancelling")
+                                  : t("myTrips.cancelTrip")}
                               </AlertDialogTrigger>
                               <AlertDialogContent className="rounded-xl p-8 data-[size=default]:sm:max-w-lg">
                                 <AlertDialogHeader className="space-y-4">
@@ -212,46 +212,43 @@ export default function MyTrips() {
                                     <img
                                       src="/images/logo.svg"
                                       alt="Logo"
-                                      className="h-9 w-28 lg:h-12 lg:w-[162px] xl:h-16 xl:w-[182px]"
+                                      className="h-9 w-28 lg:h-12 lg:w-40.5 xl:h-16 xl:w-45.5"
                                       height={64}
                                       width={182}
                                     />
                                     <span className="font-semibold text-base md:text-2xl">
-                                      Are you absolutely sure?
+                                      {t("myTrips.cancelDialog.title")}
                                     </span>
                                   </AlertDialogTitle>
                                   <AlertDialogDescription className="text-base xl:text-lg">
-                                    This action cannot be undone. This will
-                                    permanently cancel your trip to Ibiza.
-                                    Please note that{' '}
+                                    {t("myTrips.cancelDialog.description")}{" "}
                                     <strong>
-                                      only 70% of the paid amount will be
-                                      refunded
-                                    </strong>{' '}
-                                    to your original payment method.
+                                      {t("myTrips.cancelDialog.refundNote")}
+                                    </strong>{" "}
+                                    {t("myTrips.cancelDialog.refundSuffix")}
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                   <AlertDialogCancel className="bg-brand mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg">
-                                    Keep Trip
+                                    {t("myTrips.cancelDialog.keepTrip")}
                                   </AlertDialogCancel>
                                   <AlertDialogAction
                                     onClick={() => handleCancel(item.id)}
                                     className="bg-red-500 mt-12.5 py-6 w-full disabled:bg-brand/30 md:w-52 text-white rounded-[5px] px-14 text-lg"
                                   >
-                                    Cancel Trip
+                                    {t("myTrips.cancelDialog.cancelTrip")}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
                           ) : (
                             <span className="text-gray-400 cursor-not-allowed">
-                              Cancelled
+                              {t("myTrips.cancelled")}
                             </span>
                           )}
                         </TableCell>
                       </TableRow>
-                    )
+                    );
                   })}
                 </TableBody>
               </Table>
@@ -261,5 +258,5 @@ export default function MyTrips() {
       </section>
       <Footer />
     </main>
-  )
+  );
 }

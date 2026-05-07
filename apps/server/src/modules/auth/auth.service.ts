@@ -619,15 +619,24 @@ export async function resetPassword({
   return { message: 'Password reset successfully' }
 }
 
-export const listUsers = async () => {
-  return await db.user.findMany({
-    include: {
-      userInfos: true,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  })
+export const listUsers = async (page = 1, limit = 12) => {
+  const skip = (page - 1) * limit
+  const [users, total] = await Promise.all([
+    db.user.findMany({
+      include: { userInfos: true },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: limit,
+    }),
+    db.user.count(),
+  ])
+  return {
+    users,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  }
 }
 
 export const toggleUserSuspension = async (userId: string) => {

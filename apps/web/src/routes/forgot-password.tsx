@@ -14,9 +14,11 @@ import {
 import { authClient } from '@/lib/auth-client'
 import Header from '@/components/header'
 import Footer from '@/components/footer'
+import { useTranslation } from 'react-i18next'
 
 export default function ForgotPassword() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const form = useForm<ForgotPasswordInput>({
     resolver: zodResolver(ForgotPasswordSchema),
     defaultValues: {
@@ -27,11 +29,11 @@ export default function ForgotPassword() {
   const onSubmit = async (values: ForgotPasswordInput) => {
     try {
       await authClient.forgotPassword(values)
-      toast.success('Reset link sent to your email!')
+      toast.success(t('forgotPassword.resetLinkSent'))
       navigate('/signin')
     } catch (error: any) {
       toast.error(
-        error instanceof Error ? error.message : 'Something went wrong',
+        error instanceof Error ? error.message : t('forgotPassword.somethingWentWrong'),
       )
     }
   }
@@ -43,11 +45,10 @@ export default function ForgotPassword() {
         <div className="w-full max-w-[500px] space-y-8 bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-[#E0E0E0]">
           <div className="space-y-2 text-center">
             <h1 className="text-3xl font-bold tracking-tight text-[#473D3E]">
-              Forgot Password
+              {t('forgotPassword.title')}
             </h1>
             <p className="text-[#7A7A7A]">
-              Enter your email address and we'll send you a link to reset your
-              password.
+              {t('forgotPassword.subtitle')}
             </p>
           </div>
 
@@ -59,10 +60,10 @@ export default function ForgotPassword() {
                 render={({ field, fieldState }) => (
                   <Field>
                     <FieldLabel className="text-base font-normal leading-[120%]">
-                      Email Address
+                      {t('forgotPassword.emailLabel')}
                     </FieldLabel>
                     <Input
-                      placeholder="john@example.com"
+                      placeholder={t('forgotPassword.emailPlaceholder')}
                       className="border focus-visible:border-brand rounded-[10px] border-brand px-6 py-5 h-14 text-lg placeholder:text-black/30 w-full placeholder:text-lg"
                       {...field}
                     />
@@ -78,7 +79,7 @@ export default function ForgotPassword() {
                 disabled={form.formState.isSubmitting}
                 className="w-full h-14 bg-brand hover:bg-brand/90 text-white rounded-[10px] text-lg font-bold transition-all"
               >
-                {form.formState.isSubmitting ? 'Sending...' : 'Send Reset Link'}
+                {form.formState.isSubmitting ? t('forgotPassword.sending') : t('forgotPassword.sendResetLink')}
               </Button>
 
               <div className="text-center">
@@ -88,7 +89,7 @@ export default function ForgotPassword() {
                   onClick={() => navigate('/signin')}
                   className="text-brand text-lg font-medium"
                 >
-                  Back to Login
+                  {t('forgotPassword.backToLogin')}
                 </Button>
               </div>
             </FieldGroup>

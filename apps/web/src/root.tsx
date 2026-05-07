@@ -12,6 +12,9 @@ import type { Route } from './+types/root'
 
 import './index.css'
 import { Toaster } from './components/ui/sonner'
+import './lib/i18n'
+import { I18nextProvider } from 'react-i18next'
+import i18n from './lib/i18n'
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -69,16 +72,18 @@ import { fetcher } from './lib/api-client'
 
 export default function App() {
   return (
-    <SWRConfig value={{ fetcher }}>
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
-        <AuthProvider>
-          <div className="grid grid-rows-[auto_1fr] h-svh">
-            <Outlet />
-          </div>
-          <Toaster richColors />
-        </AuthProvider>
-      </GoogleOAuthProvider>
-    </SWRConfig>
+    <I18nextProvider i18n={i18n}>
+      <SWRConfig value={{ fetcher }}>
+        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+          <AuthProvider>
+            <div className="grid grid-rows-[auto_1fr] h-svh">
+              <Outlet />
+            </div>
+            <Toaster richColors />
+          </AuthProvider>
+        </GoogleOAuthProvider>
+      </SWRConfig>
+    </I18nextProvider>
   )
 }
 
@@ -86,10 +91,12 @@ import Header from './components/header'
 import Footer from './components/footer'
 import { Button } from './components/ui/button'
 import { Link } from 'react-router'
+import { useTranslation } from 'react-i18next'
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = 'Oops!'
-  let details = 'An unexpected error occurred.'
+  const { t } = useTranslation()
+  let message = t('errors.oops')
+  let details = t('errors.unexpectedError')
 
   if (isRouteErrorResponse(error)) {
     details =
@@ -102,22 +109,22 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
         <main className="container mx-auto flex flex-col items-center justify-center py-20 lg:py-32 text-center space-y-6">
           <div className="space-y-2">
             <h1 className="text-4xl lg:text-7xl font-bold text-brand">
-              {error.status === 404 ? '404' : 'Error'}
+              {error.status === 404 ? t('errors.pageNotFound') : 'Error'}
             </h1>
             <h2 className="text-2xl lg:text-4xl font-semibold text-[#473D3E]">
               {error.status === 404
-                ? 'Lost in Adventure?'
-                : 'Something went wrong'}
+                ? t('errors.lostInAdventure')
+                : t('errors.somethingWentWrong')}
             </h2>
           </div>
           <p className="max-w-md text-sm lg:text-lg text-[#7A7A7A]">
             {error.status === 404
-              ? 'The requested page could not be found.'
+              ? t('errors.pageNotFoundDesc')
               : details}
           </p>
           <Link to="/">
             <Button className="bg-brand text-white px-8 py-6 rounded-[5px] text-lg hover:bg-brand/90 transition-all font-medium">
-              Back to Home
+              {t('common.backToHome')}
             </Button>
           </Link>
         </main>
@@ -131,7 +138,7 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
       <h1 className="text-3xl font-bold">{message}</h1>
       <p className="text-gray-600">{details}</p>
       <Link to="/">
-        <Button variant="outline">Back to Home</Button>
+        <Button variant="outline">{t('common.backToHome')}</Button>
       </Link>
     </main>
   )

@@ -16,9 +16,11 @@ import Header from '@/components/header'
 import Footer from '@/components/footer'
 import { useEffect, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export default function ResetPassword() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
   const [showPassword, setShowPassword] = useState(false)
@@ -35,7 +37,7 @@ export default function ResetPassword() {
 
   useEffect(() => {
     if (!token) {
-      toast.error('Invalid or missing reset token')
+      toast.error(t('resetPassword.invalidToken'))
       navigate('/signin')
     }
   }, [token, navigate])
@@ -43,11 +45,11 @@ export default function ResetPassword() {
   const onSubmit = async (values: ResetPasswordInput) => {
     try {
       await authClient.resetPassword(values)
-      toast.success('Password reset successfully! Please login.')
+      toast.success(t('resetPassword.successMessage'))
       navigate('/signin')
     } catch (error: any) {
       toast.error(
-        error instanceof Error ? error.message : 'Something went wrong',
+        error instanceof Error ? error.message : t('resetPassword.somethingWentWrong'),
       )
     }
   }
@@ -59,9 +61,9 @@ export default function ResetPassword() {
         <div className="w-full max-w-[500px] space-y-8 bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-[#E0E0E0]">
           <div className="space-y-2 text-center">
             <h1 className="text-3xl font-bold tracking-tight text-[#473D3E]">
-              Reset Password
+              {t('resetPassword.title')}
             </h1>
-            <p className="text-[#7A7A7A]">Please enter your new password.</p>
+            <p className="text-[#7A7A7A]">{t('resetPassword.subtitle')}</p>
           </div>
 
           <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -72,7 +74,7 @@ export default function ResetPassword() {
                 render={({ field, fieldState }) => (
                   <Field>
                     <FieldLabel className="text-base font-normal leading-[120%]">
-                      New Password
+                      {t('resetPassword.newPassword')}
                     </FieldLabel>
                     <div className="relative">
                       <Input
@@ -106,7 +108,7 @@ export default function ResetPassword() {
                 render={({ field, fieldState }) => (
                   <Field>
                     <FieldLabel className="text-base font-normal leading-[120%]">
-                      Confirm New Password
+                      {t('resetPassword.confirmNewPassword')}
                     </FieldLabel>
                     <div className="relative">
                       <Input
@@ -142,8 +144,8 @@ export default function ResetPassword() {
                 className="w-full h-14 bg-brand hover:bg-brand/90 text-white rounded-[10px] text-lg font-bold transition-all"
               >
                 {form.formState.isSubmitting
-                  ? 'Resetting...'
-                  : 'Reset Password'}
+                  ? t('resetPassword.resetting')
+                  : t('resetPassword.resetButton')}
               </Button>
             </FieldGroup>
           </form>

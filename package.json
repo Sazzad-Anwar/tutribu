@@ -34,7 +34,7 @@
   "devDependencies": {
     "@tutribu/config": "workspace:*",
     "@types/bun": "^1.3.5",
-    "turbo": "^2.8.20",
+    "turbo": "^2.9.9",
     "typescript": "^5.9.3"
   },
   "packageManager": "bun@1.3.5"

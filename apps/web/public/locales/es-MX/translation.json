@@ -1,0 +1,324 @@
+{
+  "common": {
+    "back": "Atrás",
+    "login": "Iniciar sesión",
+    "signUp": "Registrarse",
+    "signIn": "Iniciar sesión",
+    "logout": "Cerrar sesión",
+    "profile": "Perfil",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "save": "Guardar",
+    "or": "O",
+    "loading": "Cargando...",
+    "backToHome": "Volver al inicio",
+    "backToLogin": "Volver al inicio de sesión",
+    "dashboard": "Panel de control",
+    "myTrips": "Mis viajes"
+  },
+  "header": {
+    "nav": {
+      "home": "Inicio",
+      "destination": "Destinos",
+      "aboutUs": "Sobre nosotros",
+      "deals": "Ofertas",
+      "blog": "Blog",
+      "support": "Soporte"
+    },
+    "megaMenu": {
+      "destinations": {
+        "americas": "Américas",
+        "asia": "Asia",
+        "africa": "África",
+        "europe": "Europa",
+        "comingSoon": "Próximamente",
+        "featured": {
+          "title": "Maldivas",
+          "description": "Icónicos bungalows sobre el agua, arena blanca cegadora y algunas de las aguas más claras del mundo.",
+          "cta": "Encuentra tu viaje"
+        }
+      },
+      "about": {
+        "whoWeAre": {
+          "title": "¿Quiénes somos?",
+          "packLeaders": "Conoce a tus Pack Leaders",
+          "travelExperts": "Conoce a tus Travel Experts",
+          "customerExperience": "Nuestra experiencia del cliente"
+        },
+        "howItWorks": {
+          "title": "¿Cómo funciona?",
+          "howItWorks": "¿Cómo funciona?",
+          "faqs": "Preguntas frecuentes",
+          "soloTravel": "Extra de viaje sobre viajar solo",
+          "instalments": "Cuotas"
+        },
+        "company": {
+          "title": "Compañía",
+          "careers": "Carreras en TU Tribu Viajera",
+          "partners": "Asóciate como agente de viajes",
+          "terms": "Términos y condiciones del viaje",
+          "guarantee": "Garantía Flash Pack",
+          "safety": "Seguridad con TU Tribu Viajera",
+          "privacy": "Política de privacidad"
+        }
+      }
+    },
+    "adminDashboard": "Panel de administrador",
+    "myTrips": "Mis viajes"
+  },
+  "footer": {
+    "tagline": "Descubre el mundo con Tu Tribu Viajera — tu plataforma de confianza para reservar viajes, vuelos, hoteles y experiencias inolvidables. Viajar fácil, inspirador y lleno de aventura.",
+    "weAccept": "Aceptamos",
+    "copyright": "© 2025 Tu Tribu Viajera. Todos los derechos reservados. | Política de privacidad | Términos y condiciones",
+    "sections": {
+      "services": {
+        "title": "Servicios",
+        "termsCondition": "Términos y condiciones",
+        "helpSupport": "Ayuda y soporte",
+        "manageMyBooking": "Administrar mi reserva",
+        "travelInsurance": "Seguro de viaje",
+        "cancellationPolicy": "Política de cancelación",
+        "giftCards": "Tarjetas de regalo",
+        "contactUs": "Contáctanos"
+      },
+      "company": {
+        "title": "Empresa",
+        "careers": "Empleos",
+        "pressMedia": "Prensa y medios",
+        "blogTravelTips": "Blog y consejos de viaje",
+        "sustainability": "Sostenibilidad",
+        "partnerships": "Asociaciones",
+        "affiliates": "Afiliados"
+      },
+      "quickLinks": {
+        "title": "Accesos rápidos",
+        "destinations": "Destinos",
+        "popularTrips": "Viajes populares",
+        "flights": "Vuelos",
+        "hotels": "Hoteles",
+        "carRentals": "Renta de autos",
+        "groupTours": "Tours grupales",
+        "specialOffers": "Ofertas especiales"
+      },
+      "community": {
+        "title": "Comunidad",
+        "travelerReviews": "Reseñas de viajeros",
+        "referAFriend": "Recomendar a un amigo",
+        "loyaltyProgram": "Programa de lealtad",
+        "travelStories": "Historias de viaje",
+        "photoGallery": "Galería de fotos",
+        "newsletterSignup": "Suscríbete al boletín",
+        "joinOurTribe": "Únete a nuestra tribu"
+      },
+      "faqs": {
+        "title": "Preguntas frecuentes",
+        "howToBook": "Cómo reservar un viaje",
+        "paymentOptions": "Opciones de pago",
+        "refundCancellation": "Reembolso y cancelación",
+        "travelSafety": "Seguridad en el viaje",
+        "accountSettings": "Configuración de cuenta",
+        "loyaltyProgram": "Programa de lealtad",
+        "customerSupport": "Atención al cliente"
+      }
+    }
+  },
+  "signin": {
+    "title": "Iniciar sesión",
+    "email": "Correo electrónico",
+    "emailPlaceholder": "Ingresa tu correo electrónico",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "signInButton": "Iniciar sesión",
+    "continueWithGoogle": "Continuar con Google",
+    "noAccount": "¿No tienes una cuenta?",
+    "signUpNow": "Regístrate ahora",
+    "googleSuccess": "Sesión iniciada con Google exitosamente",
+    "googleFailed": "Error al iniciar sesión con Google",
+    "signInSuccess": "Sesión iniciada exitosamente",
+    "signInFailed": "Error al iniciar sesión",
+    "googleSignInFailed": "Error al iniciar sesión con Google"
+  },
+  "signup": {
+    "title": "Registrarse",
+    "continueWithGoogle": "Continuar con Google",
+    "orSignUpWithEmail": "o regístrate con tu correo",
+    "firstName": "Nombre",
+    "firstNamePlaceholder": "Nombre",
+    "lastName": "Apellido",
+    "lastNamePlaceholder": "Apellido",
+    "phoneNumber": "Número de teléfono",
+    "phoneNumberPlaceholder": "Número de teléfono",
+    "emailAddress": "Correo electrónico",
+    "emailAddressPlaceholder": "Correo electrónico",
+    "password": "Contraseña",
+    "passwordPlaceholder": "Contraseña",
+    "confirmPassword": "Confirmar contraseña",
+    "agreeTerms": "Al registrarme acepto los",
+    "termsConditions": "Términos y condiciones",
+    "signInButton": "Registrarse",
+    "alreadyHaveAccount": "¿Ya tienes una cuenta?",
+    "signIn": "Inicia sesión",
+    "accountCreated": "Cuenta creada exitosamente",
+    "accountCreationFailed": "Error al crear la cuenta",
+    "googleSuccess": "Sesión iniciada con Google exitosamente",
+    "googleFailed": "Error al iniciar sesión con Google",
+    "googleSignInFailed": "Error al iniciar sesión con Google"
+  },
+  "forgotPassword": {
+    "title": "Olvidé mi contraseña",
+    "subtitle": "Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "juan@ejemplo.com",
+    "sendResetLink": "Enviar enlace de restablecimiento",
+    "sending": "Enviando...",
+    "backToLogin": "Volver al inicio de sesión",
+    "resetLinkSent": "¡Enlace de restablecimiento enviado a tu correo!",
+    "somethingWentWrong": "Algo salió mal"
+  },
+  "resetPassword": {
+    "title": "Restablecer contraseña",
+    "subtitle": "Por favor ingresa tu nueva contraseña.",
+    "newPassword": "Nueva contraseña",
+    "confirmNewPassword": "Confirmar nueva contraseña",
+    "resetButton": "Restablecer contraseña",
+    "resetting": "Restableciendo...",
+    "successMessage": "¡Contraseña restablecida exitosamente! Por favor inicia sesión.",
+    "invalidToken": "Token de restablecimiento inválido o faltante",
+    "somethingWentWrong": "Algo salió mal"
+  },
+  "myTrips": {
+    "title": "Mis viajes",
+    "noTripsTitle": "No se encontraron viajes",
+    "noTripsSubtitle": "Parece que aún no has reservado ningún viaje.",
+    "exploreDestinations": "Explorar destinos",
+    "traveler": "Viajero",
+    "travelersCount": "2 Adultos y 1 Niño",
+    "paymentStatus": "Estado de pago",
+    "bookingStatus": "Estado de reserva",
+    "cancelTrip": "Cancelar viaje",
+    "cancelling": "Cancelando...",
+    "cancelled": "Cancelado",
+    "cancelSuccess": "Viaje cancelado exitosamente. Se ha procesado el reembolso del 70%.",
+    "cancelFailed": "Error al cancelar el viaje",
+    "cancelDialog": {
+      "title": "¿Estás completamente seguro?",
+      "description": "Esta acción no se puede deshacer. Esto cancelará permanentemente tu viaje a Ibiza. Ten en cuenta que",
+      "refundNote": "solo se reembolsará el 70% del monto pagado",
+      "refundSuffix": "a tu método de pago original.",
+      "keepTrip": "Conservar viaje",
+      "cancelTrip": "Cancelar viaje"
+    }
+  },
+  "tripDetail": {
+    "back": "Atrás",
+    "when": "¿Cuándo?",
+    "roomOptions": "Opciones de habitación",
+    "onSale": "En oferta",
+    "questionsTitle": "¿Tienes preguntas? Estamos aquí para ayudarte.",
+    "questionsSubtitle": "Conoce personas que están en la misma etapa de la vida que tú.",
+    "callCta": "Llama: (331) 214-3422",
+    "weAreArriving": "Llegamos",
+    "departOn": "Salida el {{day}}",
+    "soldOut": "Agotado",
+    "closingSoon": "Cerrando pronto",
+    "unlockToSee": "Desbloquea para ver quién va",
+    "joinGroup": "Únete a este grupo",
+    "privateRoomRequest": "Habitación privada bajo solicitud",
+    "bookYourTrip": {
+      "title": "Reserva tu viaje hoy",
+      "description": "Asegura tu lugar con un depósito de solo £200 para tours que salen en 90+ días."
+    },
+    "flexiblePayment": {
+      "title": "Formas flexibles de pago",
+      "description": "Divide tu pago en 3 o 6 mensualidades, o paga en su totalidad 90 días antes del viaje."
+    },
+    "guarantee": {
+      "title": "Nuestra garantía",
+      "description": "Si algo bajo nuestro control no cumple las expectativas, lo resolveremos por ti."
+    }
+  },
+  "checkout": {
+    "step1of2": "Paso 1 de 2",
+    "orderDetails": "Detalles del pedido"
+  },
+  "profile": {
+    "title": "Perfil",
+    "uploadPicture": "Subir nueva foto",
+    "uploading": "Subiendo...",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "deletePictureDialog": {
+      "title": "¿Eliminar foto de perfil?",
+      "description": "Esto eliminará permanentemente tu foto de perfil.",
+      "cancel": "Cancelar",
+      "confirm": "Sí, eliminar"
+    },
+    "personalInfo": "Información personal",
+    "contactPersonal": "Contacto personal",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "gender": "Género",
+    "genderOptions": {
+      "male": "Masculino",
+      "female": "Femenino",
+      "others": "Otro"
+    },
+    "selectGender": "Seleccionar género",
+    "dateOfBirth": "Fecha de nacimiento",
+    "phoneNumber": "Número de teléfono",
+    "email": "Correo electrónico",
+    "emailAddressPlaceholder": "Correo electrónico",
+    "updateProfile": "Actualizar perfil",
+    "updating": "Actualizando...",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "profileUpdated": "Perfil actualizado exitosamente",
+    "profileUpdateFailed": "Error al actualizar perfil",
+    "addCards": "Agregar tarjetas",
+    "cardNumber": "Número de tarjeta",
+    "acceptCards": "Aceptamos tarjetas de débito y crédito.",
+    "expiryDate": "Fecha de vencimiento",
+    "nameOnCard": "Nombre en la tarjeta",
+    "securityCode": "Código de seguridad",
+    "securityCodeHint": "Los últimos 3 dígitos en la parte trasera de la tarjeta.",
+    "saveCard": "Guardar tarjeta",
+    "saving": "Guardando...",
+    "cardSaved": "¡Tarjeta guardada exitosamente!",
+    "cardSaveFailed": "Error al guardar la tarjeta en tu perfil",
+    "savedCards": "Tarjetas guardadas",
+    "noSavedCards": "No se encontraron tarjetas guardadas.",
+    "cardRemoved": "Tarjeta eliminada exitosamente",
+    "cardRemoveFailed": "Error al eliminar la tarjeta",
+    "paymentLoading": "El sistema de pago está cargando, por favor espera...",
+    "cardDetailsRequired": "Los detalles de la tarjeta son obligatorios",
+    "cardProcessFailed": "Error al procesar la tarjeta",
+    "avatarUploaded": "Avatar subido exitosamente",
+    "avatarUploadFailed": "Error al subir el avatar",
+    "avatarRemoved": "Avatar eliminado exitosamente",
+    "avatarRemoveFailed": "Error al eliminar el avatar",
+    "deleteAccount": "Eliminar cuenta",
+    "deletingAccount": "Eliminando...",
+    "accountDeleted": "Cuenta eliminada exitosamente",
+    "accountDeleteFailed": "Error al eliminar la cuenta",
+    "deleteAccountDialog": {
+      "title": "¿Estás completamente seguro?",
+      "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente tu cuenta y eliminará tus datos de nuestros servidores.",
+      "cancel": "Cancelar",
+      "confirm": "Sí, eliminar cuenta"
+    }
+  },
+  "errors": {
+    "pageNotFound": "404",
+    "lostInAdventure": "¿Perdido en la aventura?",
+    "pageNotFoundDesc": "La página solicitada no se pudo encontrar.",
+    "somethingWentWrong": "Algo salió mal",
+    "unexpectedError": "Ocurrió un error inesperado.",
+    "oops": "¡Ups!"
+  },
+  "languageSwitcher": {
+    "english": "English",
+    "spanish": "Español (MX)"
+  }
+}
