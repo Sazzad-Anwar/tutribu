@@ -649,123 +649,57 @@ export default function Header() {
         {/* </div> */}
       </div>
 
-      {/* Full Width Mega Menus */}
-      {activeMenu === 'destinations' && (
-        <div
-          className="absolute top-full left-1/2 -translate-x-1/2 w-screen bg-white overflow-hidden animate-mega-menu-reveal animate_animated animate__fadeIn"
-          onMouseEnter={() => handleMouseEnter('destinations')}
-          onMouseLeave={handleMouseLeave}
-        >
-          <div className="container mx-auto flex flex-col lg:flex-row min-h-[400px]">
-            <div className="flex-1 grid grid-cols-2 xl:grid-cols-4 gap-8 p-10">
-              {destinationsMenu.categories.map((category) => (
-                <div
-                  key={category.title}
-                  className="space-y-4"
-                >
-                  <h3 className="text-[23px] font-poppins font-semibold text-primary border-b pb-2">
-                    {category.title}
-                  </h3>
-                  <ul className="space-y-2">
-                    {category.links.map((subLink) => (
-                      <li key={subLink.label}>
-                        {subLink.label === 'Coming Soon' ? (
-                          <span
-                            className={cn(
-                              'text-xl transition-colors hover:text-brand flex items-center gap-2',
-                              subLink.disabled
-                                ? 'text-muted-foreground pointer-events-none italic'
-                                : 'text-primary',
-                            )}
-                          >
-                            {subLink.label}
-                          </span>
-                        ) : (
-                          <Link
-                            to={subLink.to}
-                            className={cn(
-                              'text-xl transition-colors hover:text-brand flex items-center gap-2',
-                              subLink.disabled
-                                ? 'text-muted-foreground pointer-events-none italic'
-                                : 'text-primary',
-                            )}
-                          >
-                            {subLink.label}
-                          </Link>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-            {/* <div className="w-full lg:w-80 xl:w-96 bg-gray-50 p-10 flex flex-col justify-between border-l">
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-                  Featured Destination
-                </h3>
-                <div className="relative aspect-video rounded-md overflow-hidden shadow-md">
-                  <img
-                    src={destinationsMenu.featured.image}
-                    alt={destinationsMenu.featured.title}
-                    className="object-cover w-full h-full"
-                  />
-                  <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-3 left-3 text-white">
-                    <h4 className="text-xl font-bold">
-                      {destinationsMenu.featured.title}
-                    </h4>
-                    <div className="flex gap-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          size={12}
-                          fill="#FFD700"
-                          color="#FFD700"
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {destinationsMenu.featured.description}
-                </p>
-              </div>
-              <Button
-                className="w-full bg-brand hover:bg-brand/90 text-white mt-6 h-12 rounded-sm font-bold"
-                onClick={() => navigate('/trip/maldives')}
-              >
-                {destinationsMenu.featured.cta}
-              </Button>
-            </div> */}
-          </div>
-        </div>
-      )}
+      {/* Full Width Mega Menus — always in DOM, animated via opacity + translateY */}
 
-      {activeMenu === 'about' && (
-        <div
-          className="absolute top-full left-1/2 -translate-x-1/2 w-screen bg-white p-10 animate-mega-menu-reveal"
-          onMouseEnter={() => handleMouseEnter('about')}
-          onMouseLeave={handleMouseLeave}
-        >
-          <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 min-h-[300px]">
-            {aboutMenu.map((category) => (
+      {/* Destinations */}
+      <div
+        className={cn(
+          'absolute top-full left-1/2 -translate-x-1/2 w-screen bg-white overflow-hidden',
+          'transition-all duration-200 ease-out',
+          activeMenu === 'destinations'
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 -translate-y-2 pointer-events-none',
+        )}
+        onMouseEnter={() => handleMouseEnter('destinations')}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="container mx-auto flex flex-col lg:flex-row min-h-[400px]">
+          <div className="flex-1 grid grid-cols-2 xl:grid-cols-4 gap-8 p-10">
+            {destinationsMenu.categories.map((category) => (
               <div
                 key={category.title}
                 className="space-y-4"
               >
-                <h3 className="text-[23px] font-poppins font-bold text-primary border-b pb-2">
+                <h3 className="text-[23px] font-poppins font-semibold text-primary border-b pb-2">
                   {category.title}
                 </h3>
-                <ul className="space-y-3">
+                <ul className="space-y-2">
                   {category.links.map((subLink) => (
                     <li key={subLink.label}>
-                      <Link
-                        to={subLink.to}
-                        className="text-xl text-primary transition-colors hover:text-brand flex items-center gap-2"
-                      >
-                        {subLink.label}
-                      </Link>
+                      {subLink.label === 'Coming Soon' ? (
+                        <span
+                          className={cn(
+                            'text-xl transition-colors hover:text-brand flex items-center gap-2',
+                            subLink.disabled
+                              ? 'text-muted-foreground pointer-events-none italic'
+                              : 'text-primary',
+                          )}
+                        >
+                          {subLink.label}
+                        </span>
+                      ) : (
+                        <Link
+                          to={subLink.to}
+                          className={cn(
+                            'text-xl transition-colors hover:text-brand flex items-center gap-2',
+                            subLink.disabled
+                              ? 'text-muted-foreground pointer-events-none italic'
+                              : 'text-primary',
+                          )}
+                        >
+                          {subLink.label}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -773,7 +707,45 @@ export default function Header() {
             ))}
           </div>
         </div>
-      )}
+      </div>
+
+      {/* About */}
+      <div
+        className={cn(
+          'absolute top-full left-1/2 -translate-x-1/2 w-screen bg-white p-10',
+          'transition-all duration-200 ease-out',
+          activeMenu === 'about'
+            ? 'opacity-100 translate-y-0 pointer-events-auto'
+            : 'opacity-0 -translate-y-2 pointer-events-none',
+        )}
+        onMouseEnter={() => handleMouseEnter('about')}
+        onMouseLeave={handleMouseLeave}
+      >
+        <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-10 min-h-[300px]">
+          {aboutMenu.map((category) => (
+            <div
+              key={category.title}
+              className="space-y-4"
+            >
+              <h3 className="text-[23px] font-poppins font-bold text-primary border-b pb-2">
+                {category.title}
+              </h3>
+              <ul className="space-y-3">
+                {category.links.map((subLink) => (
+                  <li key={subLink.label}>
+                    <Link
+                      to={subLink.to}
+                      className="text-xl text-primary transition-colors hover:text-brand flex items-center gap-2"
+                    >
+                      {subLink.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
     </header>
   )
 }
