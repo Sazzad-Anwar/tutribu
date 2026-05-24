@@ -10,9 +10,10 @@ const API_PASSWORD = import.meta.env.VITE_API_PASSWORD ?? ''
  * Points at the WordPress site via CORS proxy.
  */
 export const apiClient = axiosClient.default.create({
-  baseURL: import.meta.env.DEV
-    ? 'https://corsproxy.io/?url=' + import.meta.env.VITE_WP_URL
-    : import.meta.env.VITE_WP_URL,
+  // baseURL: import.meta.env.DEV
+  //   ? 'https://corsproxy.io/?url=' + import.meta.env.VITE_WP_URL
+  //   : import.meta.env.VITE_WP_URL,
+  baseURL: import.meta.env.VITE_WP_URL,
   headers: {
     'Content-Type': 'application/json',
   },
