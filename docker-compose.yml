@@ -11,6 +11,10 @@ services:
     networks:
       - tutribu-network
       - wordpress-network
+    develop:
+      watch:
+        - action: rebuild
+          path: .
 
   web:
     build:
@@ -21,6 +25,10 @@ services:
     command: sh -c "cp -r /app/public/. /host/public/ && while true; do sleep 3600; done"
     networks:
       - tutribu-network
+    develop:
+      watch:
+        - action: rebuild
+          path: .
 
 networks:
   tutribu-network:
