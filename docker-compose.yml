@@ -10,38 +10,21 @@ services:
     restart: always
     networks:
       - tutribu-network
+      - wordpress-network
 
   web:
     build:
       context: .
       dockerfile: Dockerfile.web
     volumes:
-      - web-build:/app/public
-    networks:
-      - tutribu-network
-
-  caddy:
-    image: caddy:latest
-    ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - web-build:/var/www/html
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - server
-      - web
-    restart: always
+      - /var/www/tutribu:/host/public
+    command: sh -c "cp -r /app/public/. /host/public/ && while true; do sleep 3600; done"
     networks:
       - tutribu-network
 
 networks:
   tutribu-network:
     driver: bridge
-
-volumes:
-  web-build:
-  caddy_data:
-  caddy_config:
+  wordpress-network:
+    name: wordpress-0ppn_default
+    external: true
