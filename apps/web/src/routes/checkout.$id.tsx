@@ -117,11 +117,42 @@ function CheckoutInner() {
     }
   }, [group])
 
+  // Load initial timeLeft from localStorage on mount
   useEffect(() => {
     setIsMounted(true)
-    if (timeLeft <= 0 && groupItem) {
+    if (!groupItem) return
+
+    const storageKey = `checkout_timer_expiry_${id}_${groupItem}`
+    const storedExpiry = localStorage.getItem(storageKey)
+    const now = Date.now()
+
+    let initialTimeLeft = 15 * 60
+    if (storedExpiry) {
+      const expiryTime = parseInt(storedExpiry, 10)
+      const diff = expiryTime - now
+      if (diff > 0) {
+        initialTimeLeft = Math.ceil(diff / 1000)
+      } else {
+        initialTimeLeft = 0
+      }
+    } else {
+      const newExpiryTime = now + 15 * 60 * 1000
+      localStorage.setItem(storageKey, newExpiryTime.toString())
+    }
+
+    setTimeLeft(initialTimeLeft)
+  }, [id, groupItem])
+
+  // Handle the countdown timer and expiration action
+  useEffect(() => {
+    if (!isMounted || !groupItem) return
+
+    if (timeLeft <= 0) {
+      const storageKey = `checkout_timer_expiry_${id}_${groupItem}`
+      localStorage.removeItem(storageKey)
       updateGroupItem()
       navigate(`/${id}?group_item=${groupItem}`)
+      return
     }
 
     const timer = setInterval(() => {
@@ -129,7 +160,7 @@ function CheckoutInner() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [timeLeft])
+  }, [isMounted, timeLeft, id, groupItem])
 
   useEffect(() => {
     const fetchSavedCards = async () => {
@@ -300,6 +331,9 @@ function CheckoutInner() {
         paymentMethodId: paymentMethodIdToUse,
       }
       await bookingClient.create(data)
+      if (groupItem) {
+        localStorage.removeItem(`checkout_timer_expiry_${id}_${groupItem}`)
+      }
       toast.success('Booking created successfully', {
         description: 'You will be notified when your booking is confirmed',
       })

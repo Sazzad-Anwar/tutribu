@@ -132,14 +132,20 @@ export default function UserBookingSignup() {
 
   const onSubmit = async (data: SignUpInput | BookingSignUpInput) => {
     try {
+      let currentUser = user
       if (!isAuthenticated) {
         await authClient.signUp(data as SignUpInput)
-        await checkAuth()
-        form.reset()
+        const freshUser = await checkAuth()
+        currentUser = freshUser
         toast.success('Signed up successfully')
       }
-      authClient.updateProfile({
-        id: user!.id,
+
+      if (!currentUser) {
+        throw new Error('User authentication failed')
+      }
+
+      await authClient.updateProfile({
+        id: currentUser.id,
         firstName: form.getValues('firstName'),
         lastName: form.getValues('lastName'),
         phoneNumber: form.getValues('phoneNumber'),
@@ -150,6 +156,11 @@ export default function UserBookingSignup() {
         city: form.getValues('city'),
         userType: bookingFor as 'GUEST' | 'SELF',
       })
+
+      if (!isAuthenticated) {
+        form.reset()
+      }
+
       await updateGroupItem()
       navigate({
         pathname: `/checkout/${id}`,
@@ -297,7 +308,7 @@ export default function UserBookingSignup() {
                     >
                       <Command>
                         <CommandInput
-                          className="text-base md:text-lg"
+                          className="text-base md:text-lg py-3"
                           placeholder="Search country..."
                         />
                         <CommandList>
