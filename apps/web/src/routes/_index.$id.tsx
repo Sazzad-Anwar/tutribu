@@ -143,7 +143,7 @@ export default function Trips({ params }: Route.ComponentProps) {
                         +item?.seats === 0 ? 'opacity-60' : '',
                       )}
                     >
-                      {dayjs(item?.arriving_date).format('DD MMM YYYY')}
+                      {dayjs(item?.arriving_date * 1000).format('DD MMM YYYY')}
                     </h1>
                     <p
                       className={cn(
@@ -166,7 +166,7 @@ export default function Trips({ params }: Route.ComponentProps) {
                         +item?.seats === 0 ? 'opacity-60' : '',
                       )}
                     >
-                      {dayjs(item?.depart_date).format('DD MMM YYYY')}
+                      {dayjs(item?.depart_date * 1000).format('DD MMM YYYY')}
                     </h1>
                     <p
                       className={cn(
@@ -175,7 +175,7 @@ export default function Trips({ params }: Route.ComponentProps) {
                       )}
                     >
                       {t('tripDetail.departOn', {
-                        day: dayjs(item?.depart_date).format('dddd'),
+                        day: dayjs(item?.depart_date * 1000).format('dddd'),
                       })}
                     </p>
                   </div>

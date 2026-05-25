@@ -124,8 +124,6 @@ export default function Header() {
     }))
   }
 
-  console.log(transformWPItems(americasData?.items))
-
   const destinationsMenu: { categories: MenuCategory[]; featured: any } = {
     categories: [
       {

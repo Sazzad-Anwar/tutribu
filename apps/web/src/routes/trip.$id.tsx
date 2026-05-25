@@ -1,42 +1,42 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "../context/auth-context";
-import type { Route } from "./+types/trip.$id";
-import Header from "../components/header";
-import UserBookingSignup from "../components/user-booking-signup";
-import Footer from "../components/footer";
-import useSWR from "swr";
-import { Skeleton } from "../components/ui/skeleton";
-import { useSearchParams } from "react-router";
-import dayjs from "dayjs";
-import { useTranslation } from "react-i18next";
+import { useEffect, useState } from 'react'
+import { useAuth } from '../context/auth-context'
+import type { Route } from './+types/trip.$id'
+import Header from '../components/header'
+import UserBookingSignup from '../components/user-booking-signup'
+import Footer from '../components/footer'
+import useSWR from 'swr'
+import { Skeleton } from '../components/ui/skeleton'
+import { useSearchParams } from 'react-router'
+import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "tutribu" },
-    { name: "description", content: "tutribu is a web application" },
-  ];
+    { title: 'tutribu' },
+    { name: 'description', content: 'tutribu is a web application' },
+  ]
 }
 
 export default function Trip({ params }: Route.ComponentProps) {
-  const { id } = params;
-  const { t } = useTranslation();
-  const [searchParams] = useSearchParams();
-  const groupItem = searchParams.get("group_item");
-  const { checkAuth } = useAuth();
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const { data, isLoading } = useSWR(`/wp/v2/trips/?slug=${id}`);
-  const trip = data?.[0];
-  const group = groupItem ? trip?.meta?.group_item?.[groupItem] : undefined;
+  const { id } = params
+  const { t } = useTranslation()
+  const [searchParams] = useSearchParams()
+  const groupItem = searchParams.get('group_item')
+  const { checkAuth } = useAuth()
+  const [imageLoaded, setImageLoaded] = useState(false)
+  const { data, isLoading } = useSWR(`/wp/v2/trips/?slug=${id}`)
+  const trip = data?.[0]
+  const group = groupItem ? trip?.meta?.group_item?.[groupItem] : undefined
   const { data: imageData, isLoading: isLoadingImage } = useSWR(
     trip?.featured_media ? `/wp/v2/media/${trip?.featured_media}` : null,
-  );
+  )
 
   useEffect(() => {
     const checkAuthHandler = async () => {
-      await checkAuth();
-    };
-    checkAuthHandler();
-  }, []);
+      await checkAuth()
+    }
+    checkAuthHandler()
+  }, [])
 
   return (
     <main>
@@ -48,7 +48,7 @@ export default function Trip({ params }: Route.ComponentProps) {
         {imageData?.media_details?.sizes?.full?.source_url && (
           <img
             className={`h-full w-full object-cover rounded-[10px] md:rounded-none object-center transition-opacity duration-500 ${
-              imageLoaded ? "opacity-100" : "opacity-0"
+              imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             src={imageData.media_details.sizes.full.source_url}
             alt={trip?.title?.rendered}
@@ -58,11 +58,11 @@ export default function Trip({ params }: Route.ComponentProps) {
       </section>
       <section className="container mx-auto py-2.5 lg:py-8">
         <span className="text-sm block max-w-fit lg:text-md xl:text-lg font-normal bg-brand text-white p-2.5 rounded-[10px]">
-          <span>{t("checkout.step1of2")}</span>
+          <span>{t('checkout.step1of2')}</span>
         </span>
         <div className=" pt-3 pb-0 lg:py-6">
           <p className="text-sm lg:text-md xl:text-lg font-normal">
-            {t("checkout.orderDetails")}
+            {t('checkout.orderDetails')}
           </p>
           <div className="py-5 hidden lg:grid grid-cols-1 md:grid-cols-3">
             <div className="col-span-2">
@@ -118,11 +118,11 @@ export default function Trip({ params }: Route.ComponentProps) {
               ) : (
                 <span className="flex items-center gap-2">
                   <span className="p-2.5 rounded-[10px] border border-brand lg:text-sm xl:text-xl font-normal">
-                    {dayjs(group?.arriving_date).format("DD MMM YYYY")}
+                    {dayjs(group?.arriving_date * 1000).format('DD MMM YYYY')}
                   </span>
                   <span className="text-xl font-normal">-</span>
                   <span className="p-2.5 rounded-[10px] border border-brand lg:text-sm xl:text-xl font-normal">
-                    {dayjs(group?.depart_date).format("DD MMM YYYY")}
+                    {dayjs(group?.depart_date * 1000).format('DD MMM YYYY')}
                   </span>
                 </span>
               )}
@@ -135,5 +135,5 @@ export default function Trip({ params }: Route.ComponentProps) {
       </section>
       <Footer />
     </main>
-  );
+  )
 }
