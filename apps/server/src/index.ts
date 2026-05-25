@@ -7,12 +7,12 @@ import { AuthModule } from './modules/auth'
 import { BookingModule } from './modules/booking'
 import { UserInfoModule } from './modules/user-info'
 import { AdminModule } from './modules/admin'
-import { initAdminUser } from './modules/auth/auth.service'
+// import { initAdminUser } from './modules/auth/auth.service'
 
 // Initialize Admin User
-initAdminUser().catch((err) => {
-  console.error('Failed to initialize admin user:', err)
-})
+// initAdminUser().catch((err) => {
+//   console.error('Failed to initialize admin user:', err)
+// })
 
 new Elysia()
   .use(
