@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/auth-context'
-import type { Route } from './+types/_index.$id'
+import type { Route } from './+types/$id'
 import Header from '../components/header'
 import Footer from '../components/footer'
 import useSWR from 'swr'
 import { Skeleton } from '../components/ui/skeleton'
-import { Link } from 'react-router'
+import { Link, redirect } from 'react-router'
 import dayjs from 'dayjs'
 import { ChevronLeft, Info } from 'lucide-react'
 import { cn } from '../lib/utils'
@@ -23,7 +23,7 @@ export default function Trips({ params }: Route.ComponentProps) {
   const { checkAuth } = useAuth()
   const { t } = useTranslation()
   const [imageLoaded, setImageLoaded] = useState(false)
-  const { data, isLoading } = useSWR(`/wp/v2/trips/?slug=${id}`)
+  const { data, isLoading } = useSWR(id ? `/wp/v2/trips/?slug=${id}` : null)
   const trip = data?.[0]
   const groups = trip?.meta?.group_item
     ? Object.entries(trip?.meta?.group_item).map(([key, value]) => ({

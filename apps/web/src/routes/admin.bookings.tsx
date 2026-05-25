@@ -39,9 +39,9 @@ export default function AdminBookings() {
 
   useEffect(() => {
     if (!authLoading && !isAdmin) {
-      navigate('/')
+      window.location.replace(import.meta.env.VITE_MAIN_SITE_URL)
     }
-  }, [isAdmin, authLoading, navigate])
+  }, [isAdmin, authLoading])
 
   const fetchBookings = async () => {
     try {

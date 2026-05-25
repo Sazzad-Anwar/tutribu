@@ -56,7 +56,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
         <title>Tutribu</title>
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <ScrollRestoration />
         <Scripts />

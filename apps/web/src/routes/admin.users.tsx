@@ -60,15 +60,11 @@ export default function AdminUsers() {
 
   useEffect(() => {
     if (!authLoading && !isAdmin) {
-      navigate('/')
+      window.location.replace(import.meta.env.VITE_MAIN_SITE_URL)
     }
-  }, [isAdmin, authLoading, navigate])
+  }, [isAdmin, authLoading])
 
-  const {
-    data,
-    isLoading,
-    mutate,
-  } = useSWR<PaginatedUsers>(
+  const { data, isLoading, mutate } = useSWR<PaginatedUsers>(
     isAdmin ? `/api/admin/users?page=${page}&limit=${PAGE_SIZE}` : null,
     backendFetcher,
   )
@@ -232,12 +228,15 @@ export default function AdminUsers() {
                         <div className="space-y-3">
                           <div className="flex items-center gap-3 text-gray-600">
                             <Mail className="w-4 h-4 shrink-0" />
-                            <span className="text-sm truncate">{user.email}</span>
+                            <span className="text-sm truncate">
+                              {user.email}
+                            </span>
                           </div>
                           <div className="flex items-center gap-3 text-gray-600">
                             <Calendar className="w-4 h-4 shrink-0" />
                             <span className="text-sm">
-                              Joined {dayjs(user.createdAt).format('MMM D, YYYY')}
+                              Joined{' '}
+                              {dayjs(user.createdAt).format('MMM D, YYYY')}
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
@@ -250,7 +249,9 @@ export default function AdminUsers() {
                                   : 'text-green-500',
                               )}
                             >
-                              {user.isSuspended ? 'Suspended' : 'Account Active'}
+                              {user.isSuspended
+                                ? 'Suspended'
+                                : 'Account Active'}
                             </span>
                           </div>
                         </div>
@@ -405,8 +406,8 @@ export default function AdminUsers() {
                                     <>
                                       You are about to restore access for{' '}
                                       <strong>{fullName}</strong>. The user will
-                                      be able to log in and manage their bookings
-                                      immediately.
+                                      be able to log in and manage their
+                                      bookings immediately.
                                     </>
                                   ) : (
                                     <>
@@ -427,7 +428,9 @@ export default function AdminUsers() {
                                   Cancel
                                 </AlertDialogCancel>
                                 <AlertDialogAction
-                                  onClick={() => handleToggleSuspension(user.id)}
+                                  onClick={() =>
+                                    handleToggleSuspension(user.id)
+                                  }
                                   className={cn(
                                     'h-14 rounded-xl text-lg flex-1 text-white',
                                     user.isSuspended
@@ -472,7 +475,10 @@ export default function AdminUsers() {
                 if (!nearCurrent && !isEndpoint) {
                   if (p === 2 || p === totalPages - 1) {
                     return (
-                      <span key={p} className="text-gray-400 px-1">
+                      <span
+                        key={p}
+                        className="text-gray-400 px-1"
+                      >
                         …
                       </span>
                     )
@@ -487,7 +493,8 @@ export default function AdminUsers() {
                     size="icon"
                     className={cn(
                       'rounded-full w-10 h-10 text-sm font-medium',
-                      isCurrentPage && 'bg-brand border-brand text-white hover:bg-brand/90',
+                      isCurrentPage &&
+                        'bg-brand border-brand text-white hover:bg-brand/90',
                     )}
                     onClick={() => setPage(p)}
                   >
